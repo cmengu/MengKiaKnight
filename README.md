@@ -1,4 +1,4 @@
-# TrackFlow
+# Mega Precision Tracking
 ### QR-based production component tracking for manufacturing SMEs
 
 > NUS Orbital 2026 — Team MengKiaKNIGHT — Apollo 11
