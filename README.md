@@ -47,53 +47,53 @@ The app is a PWA — no installation required. Workers access the scan interface
 
 ```mermaid
 flowchart TD
-    QR[QR Code<br/>Unique per component batch] -->|scanned by| W_CAM
+    QR[QR Code - Unique per batch] -->|scanned by| W_CAM
 
-    subgraph Worker ["Core F1 — Worker Terminal  (Mobile PWA · /scan)"]
-        W_CAM[Camera Scanner<br/>Instant record pull]
-        W_TAP[Single-tap Status Update<br/>Pending · In Progress · Completed · Flagged]
+    subgraph Worker ["Core F1 - Worker Terminal - Mobile PWA"]
+        W_CAM[Camera Scanner]
+        W_TAP[Status Update: Pending, In Progress, Completed, Flagged]
         W_CAM --> W_TAP
     end
 
-    subgraph ManagerSuite ["Core F2 and F3 — Manager Suite  (Web · /dashboard · /admin)"]
-        M_DASH[Live Overview Dashboard<br/>All components · Stations · Time elapsed]
-        M_MAP[Interactive Factory Floor Map<br/>Real-time 2D spatial view]
-        M_ADMIN[QR and Batch Management<br/>Generate · Assign · Manage lifecycle]
+    subgraph ManagerSuite ["Core F2 and F3 - Manager Suite - Web"]
+        M_DASH[Live Overview Dashboard]
+        M_MAP[Interactive Factory Floor Map]
+        M_ADMIN[QR and Batch Management]
         M_DASH --> M_MAP
     end
 
-    subgraph StateMachine ["Ext F2 — QA and Rework State Machine"]
+    subgraph StateMachine ["Ext F2 - QA and Rework State Machine"]
         SM_FLAG[Defect Flagged]
         SM_QA[QA Sub-Task Generated]
-        SM_ROUTE[Rework Routing<br/>Non-linear station paths]
-        SM_TIME[True Processing Time<br/>Recalculated across loops]
+        SM_ROUTE[Rework Routing]
+        SM_TIME[True Processing Time Recalculated]
         SM_FLAG --> SM_QA --> SM_ROUTE --> SM_TIME
     end
 
-    subgraph Automation ["Ext F3 — Bottleneck Analytics and Idle Automation"]
-        A_CRON[Scheduled Cron Job<br/>Avg dwell time per station]
-        A_ALERT[Idle Alert Service<br/>Push notification on threshold breach]
+    subgraph Automation ["Ext F3 - Bottleneck Analytics and Idle Automation"]
+        A_CRON[Cron Job - Avg dwell time per station]
+        A_ALERT[Idle Alert Service - Push on threshold breach]
         A_CRON --> A_ALERT
     end
 
     subgraph Supabase ["Supabase Backend"]
         SB_RT[Realtime Subscriptions]
-        SB_DB[(Postgres<br/>Components · Stations · QA Records · Alerts)]
-        SB_AUTH[Auth and RLS<br/>Worker · Manager roles]
+        SB_DB[(Postgres DB)]
+        SB_AUTH[Auth and RLS - Worker and Manager roles]
         SB_AUTH -->|enforce| SB_DB
         SB_DB --> SB_RT
     end
 
-    subgraph Export ["QOL — Data Export and Archiving"]
+    subgraph Export ["QOL - Data Export and Archiving"]
         EX_CSV[CSV Export]
         EX_GS[Google Sheets Sync]
     end
 
-    W_CAM -->|SELECT record| SB_DB
-    W_TAP -->|UPDATE status| SB_DB
+    W_CAM -->|fetch record| SB_DB
+    W_TAP -->|update status| SB_DB
     W_TAP -->|flag| SM_FLAG
-    SM_TIME -->|UPDATE record| SB_DB
-    M_ADMIN -->|INSERT batch and QR| SB_DB
+    SM_TIME -->|update record| SB_DB
+    M_ADMIN -->|insert batch| SB_DB
     SB_RT -->|push| M_DASH
     SB_RT -->|push| M_MAP
     SB_DB -->|scheduled query| A_CRON
