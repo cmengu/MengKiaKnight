@@ -49,66 +49,68 @@ The app is a PWA — no installation required. Workers access the scan interface
 flowchart TD
     QR[QR Code - Unique per batch] -->|scanned| W_CAM
 
-    subgraph Worker ["Core F1 - Worker Terminal - Mobile PWA"]
-        W_CAM[Camera Scanner]
-        W_TAP[Status Update: Pending, In Progress, Completed, Flagged]
-        W_CAM --> W_TAP
-    end
-
-    subgraph AdminPanel ["Core F3 - QR and Batch Management - Web"]
-        M_ADMIN[Generate and Assign QR Batches]
+    subgraph Core ["Core Features"]
+        subgraph Worker ["F1 - Worker Terminal - Mobile PWA"]
+            W_CAM[Camera Scanner]
+            W_TAP[Status Update]
+            W_CAM --> W_TAP
+        end
+        subgraph AdminPanel ["F3 - QR and Batch Management"]
+            M_ADMIN[Generate and Assign QR Batches]
+        end
     end
 
     subgraph Supabase ["Supabase Backend"]
-        SB_AUTH[Auth and RLS - Worker and Manager roles]
+        SB_AUTH[Auth and RLS]
         SB_DB[(Postgres DB)]
         SB_RT[Realtime Subscriptions]
         SB_AUTH -->|enforce| SB_DB
         SB_DB --> SB_RT
     end
 
-    subgraph StateMachine ["Ext F2 - QA and Rework State Machine"]
-        SM_FLAG[Defect Flagged]
-        SM_QA[QA Sub-Task Generated]
-        SM_ROUTE[Rework Routing]
-        SM_TIME[Processing Time Recalculated]
-        SM_FLAG --> SM_QA --> SM_ROUTE --> SM_TIME
+    subgraph Extensions ["Extension Features"]
+        subgraph StateMachine ["Ext F2 - QA and Rework State Machine"]
+            SM_FLAG[Defect Flagged]
+            SM_QA[QA Sub-Task]
+            SM_ROUTE[Rework Routing]
+            SM_TIME[Time Recalculated]
+            SM_FLAG --> SM_QA --> SM_ROUTE --> SM_TIME
+        end
+        subgraph Automation ["Ext F3 - Bottleneck Analytics and Idle Automation"]
+            A_CRON[Cron Job]
+            A_ALERT[Idle Alert Service]
+            A_CRON --> A_ALERT
+        end
+        subgraph Export ["QOL - Data Export"]
+            EX_CSV[CSV Export]
+            EX_GS[Google Sheets Sync]
+        end
     end
 
-    subgraph Automation ["Ext F3 - Bottleneck Analytics and Idle Automation"]
-        A_CRON[Cron Job - Avg dwell time per station]
-        A_ALERT[Idle Alert Service - Push on threshold breach]
-        A_CRON --> A_ALERT
-    end
-
-    subgraph Dashboard ["Core F2 - Live Manager Overview - Web"]
+    subgraph Dashboard ["Core F2 - Live Manager Overview"]
         M_DASH[Live Component Overview]
-        M_MAP[Interactive Factory Floor Map]
+        M_MAP[Factory Floor Map]
         M_DASH --> M_MAP
-    end
-
-    subgraph Export ["QOL - Data Export and Archiving"]
-        EX_CSV[CSV Export]
-        EX_GS[Google Sheets Sync]
     end
 
     W_CAM -->|fetch record| SB_DB
     W_TAP -->|update status| SB_DB
-    W_TAP -->|flag defect| SM_FLAG
-    SM_TIME -->|update record| SB_DB
     M_ADMIN -->|insert batch| SB_DB
+    SB_DB -->|trigger defect flow| SM_FLAG
     SB_DB -->|scheduled query| A_CRON
     SB_DB --> EX_CSV
     SB_DB --> EX_GS
     SB_RT -->|realtime push| M_DASH
     A_ALERT -->|notify| M_DASH
 
+    style Core fill:#0a1628,color:#fff,stroke:#4a9eff
+    style Extensions fill:#1a1208,color:#fff,stroke:#ffaa44
     style Worker fill:#1e3a5f,color:#fff,stroke:#4a9eff
     style AdminPanel fill:#1a3a2a,color:#fff,stroke:#4aff88
+    style Dashboard fill:#1a3a2a,color:#fff,stroke:#4aff88
     style Supabase fill:#1a2a3a,color:#fff,stroke:#44aaff
     style StateMachine fill:#3a2a1a,color:#fff,stroke:#ffaa44
     style Automation fill:#2a1a3a,color:#fff,stroke:#cc88ff
-    style Dashboard fill:#1a3a2a,color:#fff,stroke:#4aff88
     style Export fill:#2a2a2a,color:#fff,stroke:#aaaaaa
 ```
 
@@ -133,8 +135,8 @@ flowchart TD
 ### Installation
 
 ```bash
-git clone https://github.com/cmengu/<repo-name>
-cd <repo-name>
+git clone https://github.com/cmengu/MengKiaKnight
+cd MengKiaKnight
 npm install
 ```
 
