@@ -47,7 +47,7 @@ The app is a PWA — no installation required. Workers access the scan interface
 
 ```mermaid
 flowchart TD
-    QR[QR Code - Unique per batch] -->|scanned by| W_CAM
+    QR[QR Code - Unique per batch] -->|scanned| W_CAM
 
     subgraph Worker ["Core F1 - Worker Terminal - Mobile PWA"]
         W_CAM[Camera Scanner]
@@ -55,18 +55,23 @@ flowchart TD
         W_CAM --> W_TAP
     end
 
-    subgraph ManagerSuite ["Core F2 and F3 - Manager Suite - Web"]
-        M_DASH[Live Overview Dashboard]
-        M_MAP[Interactive Factory Floor Map]
-        M_ADMIN[QR and Batch Management]
-        M_DASH --> M_MAP
+    subgraph AdminPanel ["Core F3 - QR and Batch Management - Web"]
+        M_ADMIN[Generate and Assign QR Batches]
+    end
+
+    subgraph Supabase ["Supabase Backend"]
+        SB_AUTH[Auth and RLS - Worker and Manager roles]
+        SB_DB[(Postgres DB)]
+        SB_RT[Realtime Subscriptions]
+        SB_AUTH -->|enforce| SB_DB
+        SB_DB --> SB_RT
     end
 
     subgraph StateMachine ["Ext F2 - QA and Rework State Machine"]
         SM_FLAG[Defect Flagged]
         SM_QA[QA Sub-Task Generated]
         SM_ROUTE[Rework Routing]
-        SM_TIME[True Processing Time Recalculated]
+        SM_TIME[Processing Time Recalculated]
         SM_FLAG --> SM_QA --> SM_ROUTE --> SM_TIME
     end
 
@@ -76,12 +81,10 @@ flowchart TD
         A_CRON --> A_ALERT
     end
 
-    subgraph Supabase ["Supabase Backend"]
-        SB_RT[Realtime Subscriptions]
-        SB_DB[(Postgres DB)]
-        SB_AUTH[Auth and RLS - Worker and Manager roles]
-        SB_AUTH -->|enforce| SB_DB
-        SB_DB --> SB_RT
+    subgraph Dashboard ["Core F2 - Live Manager Overview - Web"]
+        M_DASH[Live Component Overview]
+        M_MAP[Interactive Factory Floor Map]
+        M_DASH --> M_MAP
     end
 
     subgraph Export ["QOL - Data Export and Archiving"]
@@ -91,21 +94,21 @@ flowchart TD
 
     W_CAM -->|fetch record| SB_DB
     W_TAP -->|update status| SB_DB
-    W_TAP -->|flag| SM_FLAG
+    W_TAP -->|flag defect| SM_FLAG
     SM_TIME -->|update record| SB_DB
     M_ADMIN -->|insert batch| SB_DB
-    SB_RT -->|push| M_DASH
-    SB_RT -->|push| M_MAP
     SB_DB -->|scheduled query| A_CRON
-    A_ALERT -->|notify| M_DASH
     SB_DB --> EX_CSV
     SB_DB --> EX_GS
+    SB_RT -->|realtime push| M_DASH
+    A_ALERT -->|notify| M_DASH
 
     style Worker fill:#1e3a5f,color:#fff,stroke:#4a9eff
-    style ManagerSuite fill:#1a3a2a,color:#fff,stroke:#4aff88
+    style AdminPanel fill:#1a3a2a,color:#fff,stroke:#4aff88
+    style Supabase fill:#1a2a3a,color:#fff,stroke:#44aaff
     style StateMachine fill:#3a2a1a,color:#fff,stroke:#ffaa44
     style Automation fill:#2a1a3a,color:#fff,stroke:#cc88ff
-    style Supabase fill:#1a2a3a,color:#fff,stroke:#44aaff
+    style Dashboard fill:#1a3a2a,color:#fff,stroke:#4aff88
     style Export fill:#2a2a2a,color:#fff,stroke:#aaaaaa
 ```
 
