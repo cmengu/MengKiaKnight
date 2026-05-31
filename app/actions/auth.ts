@@ -3,6 +3,13 @@
  import { setSessionCookie, clearSessionCookie } from '@/lib/session'
  import { createServerClient } from '@supabase/ssr'
  import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
+
+ //created a admin so that the profile insert works without vilating role level sec
+ const adminSupabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
  //simply a helpa function to get the supabase client, supabase cookies, not ours 
  async function getSupabase() {
@@ -38,7 +45,7 @@
     if (error) return { errors: { general: error.message } }
  
     
-    const { error: profileError } = await supabase
+    const { error: profileError } = await adminSupabase
       .from('profiles')
       .insert({ id: data.user!.id, role })
     if (profileError) return { errors: { general: profileError.message } }
