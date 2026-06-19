@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/lib/session'
 
-  export function middleware(req: NextRequest) {
+  export function proxy(req: NextRequest) {
     const session = getSessionFromRequest(req)
     const { pathname } = req.nextUrl
 

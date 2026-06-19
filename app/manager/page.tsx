@@ -6,7 +6,7 @@ import type { Database } from '@/types/database'
   
 type Component = Database['public']['Tables']['components']['Row']
   
-export function ManagerDashboard() {
+export default function ManagerDashboard() {
 const [componentsList, setComponentsList] = useState<Component[]>([])
     
 useEffect(() => {

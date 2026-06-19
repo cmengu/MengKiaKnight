@@ -6,7 +6,7 @@
   
   type StatusType = Database['public']['Tables']['components']['Row']['current_status']
   
-  export function WorkerScanner() {
+  export default function WorkerScanner() {
     const [status, setStatus] = useState<StatusType>('pending')
     
     const updateStatus = async () => {
