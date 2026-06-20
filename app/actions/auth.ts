@@ -39,6 +39,7 @@ import { createClient } from '@supabase/supabase-js'
     const email    = formData.get('email') as string
     const password = formData.get('password') as string
     const role     = formData.get('role') as string   
+    const userName = formData.get('userName') as string
  
     const supabase = await getSupabase()
     const { data, error } = await supabase.auth.signUp({ email, password })
@@ -46,8 +47,13 @@ import { createClient } from '@supabase/supabase-js'
  
     
     const { error: profileError } = await adminSupabase
-      .from('profiles')
-      .insert({ id: data.user!.id, role })
+      .from('user_profiles')
+      .insert({ 
+        id: data.user!.id, 
+        role,
+        user_name: userName,
+        email_account: email
+      })
     if (profileError) return { errors: { general: profileError.message } }
     //user data defo exists, so just assert it
     await setSessionCookie(data.user!.id, role as 'worker' | 'manager')
@@ -65,7 +71,7 @@ import { createClient } from '@supabase/supabase-js'
     
     const { data: { user } } = await supabase.auth.getUser()
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('role')
       .eq('id', user!.id)
       .single()

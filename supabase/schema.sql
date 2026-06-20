@@ -5,7 +5,7 @@
 -- so the id must match a real user in the auth.users table
 -- every profile is tied to one user, and if its not specified, its worker by default
 -- and a simple data validation to ensure that the role is either worker or manager
-  CREATE TABLE profiles (
+  CREATE TABLE user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id),
     role TEXT NOT NULL DEFAULT 'worker' CHECK (role IN ('worker', 'manager'))
   );
@@ -56,14 +56,14 @@
 
 -- for now i dont create the alert configs, this is just the barebones scaffolding for now. later on then add the alert configs sql table
 
-  ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
   ALTER TABLE workstations ENABLE ROW LEVEL SECURITY;
   ALTER TABLE batches ENABLE ROW LEVEL SECURITY;
   ALTER TABLE components ENABLE ROW LEVEL SECURITY;
   ALTER TABLE status_logs ENABLE ROW LEVEL SECURITY;
 
 -- this means that everyone can read their own profile
-  CREATE POLICY "read own profile" ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
+  CREATE POLICY "read own profile" ON user_profiles FOR SELECT TO authenticated USING (id = auth.uid());
 
 -- i set such that logged-in users can read
 -- so basically lets say read workstations is just a label,  and on workstation is which table it applies to, and select is for reading data only
@@ -80,17 +80,17 @@
 -- thats why its update and insert
 -- with check means that the user is checked on whether they are in the authorised users table, NOT to be confused with the actual data validation of status checks
   CREATE POLICY "update components" ON components FOR UPDATE TO authenticated USING (
-    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('worker', 'manager')
+    (SELECT role FROM user_profiles WHERE id = auth.uid()) IN ('worker', 'manager')
   );
   CREATE POLICY "insert status_logs" ON status_logs FOR INSERT TO authenticated WITH CHECK (
-    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('worker', 'manager')
+    (SELECT role FROM user_profiles WHERE id = auth.uid()) IN ('worker', 'manager')
   );
 
 -- for now i separate workes and mangers, do let me know if you have any other suggestions for this
 -- here only the managers insert batches and workstations
   CREATE POLICY "insert batches" ON batches FOR INSERT TO authenticated WITH CHECK (
-    (SELECT role FROM profiles WHERE id = auth.uid()) = 'manager'
+    (SELECT role FROM user_profiles WHERE id = auth.uid()) = 'manager'
   );
   CREATE POLICY "insert workstations" ON workstations FOR INSERT TO authenticated WITH CHECK (
-    (SELECT role FROM profiles WHERE id = auth.uid()) = 'manager'
+    (SELECT role FROM user_profiles WHERE id = auth.uid()) = 'manager'
   );

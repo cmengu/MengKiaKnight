@@ -12,15 +12,24 @@
 
           <form action={action} className="flex flex-col gap-4">
             <input
+              name="userName"
+              type="text"
+              placeholder="Full Name"
+              required
+              className="bg-slate-700 text-white rounded-lg p-3"
+            />
+            <input
               name="email"
               type="email"
               placeholder="Email"
+              required
               className="bg-slate-700 text-white rounded-lg p-3"
             />
             <input
               name="password"
               type="password"
               placeholder="Password"
+              required
               className="bg-slate-700 text-white rounded-lg p-3"
             />
             <select
