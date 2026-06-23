@@ -69,6 +69,7 @@ export type Database = {
           id: string
           name: string
           updated_at: string | null
+          current_workstation_name: string | null
         }
         Insert: {
           current_status?: string
@@ -76,6 +77,7 @@ export type Database = {
           id?: string
           name: string
           updated_at?: string | null
+          current_workstation_name?: string | null
         }
         Update: {
           current_status?: string
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string | null
+          current_workstation_name?: string | null
         }
         Relationships: [
           {
@@ -94,18 +97,24 @@ export type Database = {
           },
         ]
       }
-      profiles: {
+      user_profiles: {
         Row: {
           id: string
           role: string
+          user_name: string | null
+          email_account: string | null
         }
         Insert: {
           id: string
           role?: string
+          user_name?: string | null
+          email_account?: string | null
         }
         Update: {
           id?: string
           role?: string
+          user_name?: string | null
+          email_account?: string | null
         }
         Relationships: []
       }

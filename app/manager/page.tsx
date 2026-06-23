@@ -7,7 +7,7 @@ import { WorkstationManager } from '@/app/_components/WorkstationManager'
   
 type Component = Database['public']['Tables']['components']['Row']
   
-export function ManagerDashboard() {
+export default function ManagerDashboard() {
 const [componentsList, setComponentsList] = useState<Component[]>([])
     
 useEffect(() => {
