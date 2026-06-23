@@ -10,7 +10,7 @@ import { logout } from '@/app/actions/auth';
 import dynamic from 'next/dynamic';
 const Scanner = dynamic(
   () => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner),
-  { ssr: false } // server-side rendering: false means only render on client side
+  { ssr: false } // server-side rendering: false means only mounts on client side
 )
 
 //define a type for our component & workstation memory
@@ -46,7 +46,7 @@ export default function WorkerScanner() {
       const parts = rawText.split(':');
       //safety check: 3 parts present in QR code?
       if (parts.length < 3) {
-        setErrorMessage("Invalid Station QR: Missing UUID.");
+        setErrorMessage("Invalid Station QR: Missing essential parts.");
         return;
       }
 
@@ -123,8 +123,17 @@ export default function WorkerScanner() {
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-slate-900 p-6">
-      <h1 className="text-3xl font-bold text-white mb-2">Station Scanner</h1>
+    //min-h-[100dvh] dynamic-viewport-height to perfectly fit mobile screens and prevent blockage by native navigational bar 
+    //added 'relative' for the absolute logout button
+    <main className="flex flex-col items-center min-h-[100dvh] bg-slate-900 p-6 relative">
+      
+      {/* Logout button pinned to TOP RIGHT */}
+      <button onClick={() => logout()} className="absolute top-6 right-6 text-slate-400 underline hover:text-slate-200 text-sm font-semibold p-2">
+        Logout
+      </button>
+
+      {/* Adjusted top margin to account for the absolute button */}
+      <h1 className="text-3xl font-bold text-white mb-2 mt-4">Station Scanner</h1>
 
       {/* Dynamic Instruction Text */}
       {!successMessage && (
@@ -174,18 +183,23 @@ export default function WorkerScanner() {
         text-center shadow-lg transform transition-all scale-105">
           <h2 className="text-2xl font-bold mb-4">Pairing Complete!</h2>
           <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
-          <button
-            onClick={resetScanner}
-            className="bg-white text-green-600 font-bold py-3 px-8 rounded-full 
-            hover:bg-green-50 transition-colors shadow-md">
-            Scan Next Item
-          </button>
         </div>
       )}
 
-      <button onClick={() => logout()} className="mt-12 text-slate-400 underline hover:text-slate-200">
-        Logout
-      </button>
+      {/* NEW RESET BUTTON: Big, bottom-pinned, glove friendly */}
+      {/* Use mt-auto to push flex container to absolute bottom of screen */}
+      <div className="w-full max-w-sm mt-auto pt-12 pb-4">
+        {/* Only show button if there is actively something to reset (component, station, error, message) */}
+        {(component || workstation || successMessage || errorMessage) && (
+          <button
+            onClick={resetScanner}
+            className="w-full bg-slate-800 text-slate-200 font-bold text-xl py-6 rounded-2xl border-4 border-slate-700 shadow-lg
+            active:scale-95 transition-all">
+              {successMessage ? "Scan Next Item" : "Reset Current Scan"}
+            </button>
+        )}
+      </div>
+
     </main>
   );
 }
