@@ -24,7 +24,6 @@
 -- and i also added in a check for who created this batch, this dude must be in the authorised users table
   CREATE TABLE batches (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    qr_code TEXT UNIQUE NOT NULL,
     name TEXT,
     created_by UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now()
@@ -64,7 +63,11 @@
 
 -- this means that everyone can read their own profile
   CREATE POLICY "read own profile" ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
-
+  
+-- added in the insert own profile policy to allow users to insert their own profile yea
+  CREATE POLICY "insert own profile" ON profiles
+    FOR INSERT TO authenticated
+    WITH CHECK (id = auth.uid());
 -- i set such that logged-in users can read
 -- so basically lets say read workstations is just a label,  and on workstation is which table it applies to, and select is for reading data only
 -- to autenticated means only logged in users can read the data and there is no other conditions so using is true 
