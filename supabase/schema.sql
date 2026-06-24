@@ -93,3 +93,28 @@
   CREATE POLICY "insert workstations" ON workstations FOR INSERT TO authenticated WITH CHECK (
     (SELECT role FROM user_profiles WHERE id = auth.uid()) = 'manager'
   );
+
+-- ===== RPC: run_readonly_query (Ask-Your-Factory) =====
+-- this is a function to run readonly queries, and not be able to modify the data
+create or replace function run_readonly_query(query_text text)
+ returns json
+ language plpgsql
+ as $$
+ declare
+   result json;
+ begin
+   -- Force read-only for everything this function runs: any INSERT/UPDATE/DELETE
+   -- (even a sneaky data-modifying CTE) now errors at the database level
+   execute 'set local default_transaction_read_only = on';
+   -- cap runaway queries (5s). set local and hecnce scoped to this function call only
+   execute 'set local statement_timeout = 5000';
+   -- wrap the query as a subquery: this makes a trailing ";DROP..." a syntax error,
+   -- and disallows data-modifying CTEs (Postgres forbids them inside a subselect)
+   execute format('select coalesce(json_agg(t), ''[]''::json) from (%s) as t', query_text)
+     into result;
+   return result;
+ end;
+ $$;
+
+ -- the logged-in manager calls this through the JS client as role technicallyauthenticated"
+ grant execute on function run_readonly_query(text) to authenticated;
