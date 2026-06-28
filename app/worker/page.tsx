@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { logout } from '@/actions/auth';
 
+
 // importing a next/dynamic wrapper to prevent camera boot up before page even reaches user browser 
 // and causing infinite loop memory crash 
 // delay loading of heavy browser-only components
@@ -12,6 +13,12 @@ const Scanner = dynamic(
   { ssr: false } // server-side rendering: false means only mounts on client side
 )
 
+const STATUS_OPTIONS = [
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'flagged', label: 'Flagged' },
+  { value: 'pending', label: 'Pending' },
+] as const;
 //Hooks, services and components
 import { useWorkerIdentity } from '@/hooks/useWorkerIdentity';
 import { useDeviceOS } from '@/hooks/useDeviceOS';
@@ -35,6 +42,8 @@ export default function WorkerScanner() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   //boolean checker to stop camera from spamming database
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('in_progress');
+  //core logic: when camera sees QR code
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
 
@@ -50,7 +59,7 @@ export default function WorkerScanner() {
     let currentComponent = component;
     let currentWorkstation = workstation;
 
-    try{
+    try {
       // LOGIC BRANCH 1: Workstation
       if (rawText.startsWith('STATION:')) {
         const parsedStation = scannerService.parseWorkstationQR(rawText);
@@ -67,46 +76,56 @@ export default function WorkerScanner() {
         const newComp = { id: rawText, name, status: currentStatus };
         setComponent(newComp);
         currentComponent = newComp;
+      }
         setIsUpdating(false);
       }
 
       // FINAL CHECK: Double-Tap Transaction
-      if (currentComponent && currentWorkstation) {
-        //debugging purposes, workername display failing
-        if(!workerId) {
-          setErrorMessage("Autentication Error: Cannot verify your worker ID. Please log out and log back in.");
-          setIsUpdating(false);
-          return;
-        }
-
-        setIsUpdating(true);
-        await scannerService.processPairing(
-          currentComponent.id,
-          currentComponent.name,
-          currentWorkstation.id,
-          currentWorkstation.name,
-          workerName,
-          workerId,
-          currentComponent.status
-        );
-        setSuccessMessage(`Component '${currentComponent.name}' is now In Progess at ${currentWorkstation.name}`);
-        setIsUpdating(false);
-      }
-    } catch (err: any) {
+      catch (err: any) {
       setErrorMessage(err.message || "An Unexpected error occurred.");
       setIsUpdating(false);
     }
   }; 
 
-  // Reset function so worker can scan the next pair of items
+  //eeset function so worker can scan the next pair of items
   const resetScanner = () => {
     setComponent(null);
     setWorkStation(null);
     setSuccessMessage(null);
     setErrorMessage(null);
+    setSelectedStatus('in_progress');
     setCameraBlocked(false);
     setScannerKey(prev => prev + 1);
   }
+
+  const confirmStatus = async () => {
+    if (!component || !workstation || isUpdating) return;
+    if (!workerId) {
+      setErrorMessage("Authentication Error: Cannot verify your worker ID. Please log out and log back in.");
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      await scannerService.processPairing(
+        component.id,
+        component.name,
+        workstation.id,
+        workstation.name,
+        workerName,
+        workerId,
+        component.status,   // from_status (the component's existing status)
+        selectedStatus      // to_status (the worker's choice)
+      );
+      const label = STATUS_OPTIONS.find((o) => o.value === selectedStatus)?.label ??
+selectedStatus;
+      setSuccessMessage(`Component '${component.name}' is now ${label} at
+${workstation.name}`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Database Error");
+    }
+    setIsUpdating(false);
+  };
+
 
   //if user denies camera permissions
   const handleError = (error: any) => {
@@ -139,7 +158,7 @@ export default function WorkerScanner() {
       <h1 className="text-3xl font-bold text-slate-200 mb-2">Station Scanner</h1>
 
       {/* Dynamic Instruction Text */}
-      {!successMessage && !cameraBlocked && (
+      {!successMessage && !(component && workstation) && !cameraBlocked &&(
         <p className="text-slate-400 mb-6 text-center">
           {!component && !workstation && "Scan Component and Workstation QR"}
           {component && !workstation && "Component scanned! Now scan Workstation."}
@@ -156,30 +175,67 @@ export default function WorkerScanner() {
         </div>
       )}
 
-      {cameraBlocked ? (
-        //Extracted Component
-        <PermissionInstructions os={os} />
-      ) : !successMessage ? (
-        <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700 shadow-2xl relative bg-black 
-        min-h-[300px] flex items-center justify-center">
-          <Scanner 
-          key={scannerKey}
-            onScan={handleScan} 
-            onError={handleError} 
-            formats={['qr_code']} 
-          />
-          {isUpdating && (
-            <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 blackdrop-blur-sm">
-              <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm text-center shadow-lg transform transition-all scale-105">
-          <h2 className="text-2xl font-bold mb-4">Pairing Complete!</h2>
-          <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
-        </div>
-      )}
+      {/* phase 1 camera -> phase 2 green status picker -> and thenphase 3 saved confirmation */}
+      {successMessage ? (
+         // PHASE 3: status saved
+         <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
+         text-center shadow-lg transform transition-all scale-105">
+           <h2 className="text-2xl font-bold mb-4">Status Updated!</h2>
+           <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
+         </div>
+       ) : (component && workstation) ? (
+         // PHASE 2: both scanned adn then to green screen with status dropdown + confirm
+         <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
+         text-center shadow-lg transform transition-all scale-105">
+           <h2 className="text-2xl font-bold mb-2">Scan Complete!</h2>
+           <p className="text-lg font-medium mb-6 leading-relaxed">
+             {component.name} @ {workstation.name}
+           </p>
+
+           <label className="block text-left text-sm font-bold uppercase tracking-wider mb-2">
+             Update status to:
+           </label>
+           <select
+             value={selectedStatus}
+             onChange={(e) => setSelectedStatus(e.target.value)}
+             className="w-full text-slate-900 font-bold text-xl p-4 rounded-xl mb-6"
+           >
+             {STATUS_OPTIONS.map((o) => (
+               <option key={o.value} value={o.value}>{o.label}</option>
+             ))}
+           </select>
+
+           <button
+             onClick={confirmStatus}
+             disabled={isUpdating}
+             className="w-full bg-slate-900 text-white font-bold text-xl py-5 rounded-2xl
+             active:scale-95 transition-all disabled:opacity-50"
+           >
+             {isUpdating ? 'Saving...' : 'Confirm Status'}
+           </button>
+         </div>
+          ) : cameraBlocked ? (
+            // camera permission denied leads to OS-specific instructions
+            <PermissionInstructions os={os} />
+          ) : (
+         // PHASE 1: still scanning -> camera 
+         <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700
+         shadow-2xl relative bg-black min-h-[300px] flex items-center justify-center">
+           <Scanner 
+             onScan={handleScan}
+             onError={handleError}
+             formats={['qr_code']}
+           />
+           {isUpdating && (
+             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 backdrop-blur-sm">
+               <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
+             </div>
+           )}
+         </div>
+       )}
+
+
+      
 
       <div className="w-full max-w-sm mt-auto pt-12 pb-4">
         {(component || workstation || successMessage || errorMessage || cameraBlocked) && (

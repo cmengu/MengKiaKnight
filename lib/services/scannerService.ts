@@ -42,7 +42,8 @@ export const scannerService = {
         workstationName: string, 
         workerName: string,
         workerId: string,
-        fromStatus: string    
+        fromStatus: string,
+        toStatus: string    
     ) {
         // Action 1: Update Component snapshot
         const { error: componentError } = await supabase   
@@ -51,7 +52,8 @@ export const scannerService = {
                 current_status: 'in_progress',
                 current_workstation_id: workstationId,
                 current_workstation_name: workstationName,
-                last_updated_by: workerName
+                last_updated_by: workerName,
+                updated_at: new Date().toISOString()
             })
             .eq('id', componentId);
 
