@@ -70,6 +70,7 @@ export type Database = {
           name: string
           updated_at: string | null
           current_workstation_name: string | null
+          last_updated_by: string | null
         }
         Insert: {
           current_status?: string
@@ -78,6 +79,7 @@ export type Database = {
           name: string
           updated_at?: string | null
           current_workstation_name?: string | null
+          last_updated_by?: string | null
         }
         Update: {
           current_status?: string
@@ -86,6 +88,7 @@ export type Database = {
           name?: string
           updated_at?: string | null
           current_workstation_name?: string | null
+          last_updated_by?: string | null
         }
         Relationships: [
           {
@@ -121,30 +124,39 @@ export type Database = {
       status_logs: {
         Row: {
           component_id: string
+          component_name: string | null
           from_status: string | null
           id: string
           timestamp: string | null
           to_status: string
           updated_by: string | null
           workstation_id: string | null
+          workstation_name: string | null
+          worker_name: string | null
         }
         Insert: {
           component_id: string
+          component_name?: string | null
           from_status?: string | null
           id?: string
           timestamp?: string | null
           to_status: string
           updated_by?: string | null
           workstation_id?: string | null
+          workstation_name?: string | null
+          worker_name?: string | null
         }
         Update: {
           component_id?: string
+          component_name?: string | null
           from_status?: string | null
           id?: string
           timestamp?: string | null
           to_status?: string
           updated_by?: string | null
           workstation_id?: string | null
+          workstation_name?: string | null
+          worker_name?: string | null
         }
         Relationships: [
           {
