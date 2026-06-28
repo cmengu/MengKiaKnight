@@ -37,6 +37,7 @@ useEffect(() => {
          </div>
        </div>
        <WorkstationManager />
+       <a href="/manager/ask" className="text-emerald-400 underline">Ask your factory →</a>.
        <button onClick={() => logout()} className="mt-8 text-slate-400 underline hover:text-slate-200">
           Logout
        </button>

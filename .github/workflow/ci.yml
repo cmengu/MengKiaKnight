@@ -1,0 +1,22 @@
+name: CI
+ on: [push, pull_request]
+ jobs:
+   build:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - uses: actions/setup-node@v4
+         with: { node-version: 20, cache: npm }
+       - run: npm ci
+       - run: npm run lint
+       - run: npm run build
+         env:
+           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+       # sacffolding for the future, if we add eval secrets, if not can just otherwise delete this step brah
+       - run: npm run eval
+         if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+         env:
+           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
