@@ -13,6 +13,13 @@ const Scanner = dynamic(
   { ssr: false } // server-side rendering: false means only mounts on client side
 )
 
+const STATUS_OPTIONS = [
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'flagged', label: 'Flagged' },
+  { value: 'pending', label: 'Pending' },
+] as const;
+
 //define a type for our component & workstation memory
 type ScannedComponent = { id: string; name: string };
 type ScannedStation = { id: string; name: string };
@@ -27,7 +34,7 @@ export default function WorkerScanner() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   //boolean checker to stop camera from spamming database
   const [isUpdating, setIsUpdating] = useState(false);
-
+  const [selectedStatus, setSelectedStatus] = useState<string>('in_progress');
   //core logic: when camera sees QR code
   const handleScan = async (detectedCodes: any) => {
     // stop scanning if updating, or already successfully finished both
@@ -35,10 +42,6 @@ export default function WorkerScanner() {
 
     const rawText = detectedCodes[0].rawValue;
     setErrorMessage(null);
-
-    //temporary variable to hold current state
-    let currentComponent = component;
-    let currentWorkstation = workstation;
 
     // LOGIC BRANCH 1: is it a workstation?
     if (rawText.startsWith('STATION:')) {
@@ -57,7 +60,7 @@ export default function WorkerScanner() {
 
       const newStation = { id: stationId, name: stationName };
       setWorkStation(newStation);
-      currentWorkstation = newStation;
+      
     }
 
     // LOGIC BRANCH 2 : else assume is a component
@@ -81,40 +84,42 @@ export default function WorkerScanner() {
 
       const newComp = { id: rawText, name: compName };
       setComponent(newComp);
-      currentComponent = newComp;
-      setIsUpdating(false);
-    }
-
-    // FINAL CHECK: Do we have BOTH WORKSTATION & COMPONENT?
-    if (currentComponent && currentWorkstation) {
-      setIsUpdating(true);
-
-      const { error } = await supabase  
-        .from('components')
-        .update({
-          current_status: 'in_progress',
-          current_workstation_id: currentWorkstation.id,
-          current_workstation_name: currentWorkstation.name
-        })
-        .eq('id', currentComponent.id);
-
-      if (error) {
-        setErrorMessage("Database Error: " + error.message);
-      } else {
-        // SUCCESS! 
-        setSuccessMessage(`Component '${currentComponent.name}' is now In Progress at ${currentWorkstation}`);
-      }
       setIsUpdating(false);
     }
   };
 
-  // Reset function so worker can scan the next pair of items
+  //eeset function so worker can scan the next pair of items
   const resetScanner = () => {
     setComponent(null);
     setWorkStation(null);
     setSuccessMessage(null);
     setErrorMessage(null);
+    setSelectedStatus('in_progress');
   }
+
+  const confirmStatus = async () => {
+    if (!component || !workstation || isUpdating) return;
+    setIsUpdating(true);
+
+    const { error } = await supabase
+      .from('components')
+      .update({
+        current_status: selectedStatus,
+        current_workstation_id: workstation.id,
+        current_workstation_name: workstation.name,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', component.id);
+
+    if (error) {
+      setErrorMessage("Database Error: " + error.message);
+    } else {
+      const label = STATUS_OPTIONS.find((o) => o.value === selectedStatus)?.label ?? selectedStatus;
+      setSuccessMessage(`Component '${component.name}' is now ${label} at ${workstation.name}`);
+    }
+    setIsUpdating(false);
+  };
+
 
   //if user denies camera permissions
   const handleError = (error: unknown) => {
@@ -136,7 +141,7 @@ export default function WorkerScanner() {
       <h1 className="text-3xl font-bold text-white mb-2 mt-4">Station Scanner</h1>
 
       {/* Dynamic Instruction Text */}
-      {!successMessage && (
+      {!successMessage && !(component && workstation) && (
         <p className="text-slate-400 mb-6 text-center">
           {!component && !workstation && "Scan Component and Workstation QR"}
           {component && !workstation && "Component scanned! Now scan Workstation."}
@@ -163,28 +168,64 @@ export default function WorkerScanner() {
         </div>
       )}
 
-      {/* Hide camera if successfully scanned both */}
-      {!successMessage ? (
-        <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700 
-        shadow-2xl relative bg-black min-h-[300px] flex items-center justify-center">
-          <Scanner 
-            onScan={handleScan}
-            onError={handleError}
-            formats={['qr_code']}
-          />
-          {isUpdating && (
-            <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 backdrop-blur-sm">
-              <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
-        text-center shadow-lg transform transition-all scale-105">
-          <h2 className="text-2xl font-bold mb-4">Pairing Complete!</h2>
-          <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
-        </div>
-      )}
+      {/* phase 1 camera -> phase 2 green status picker -> and thenphase 3 saved confirmation */}
+      {successMessage ? (
+         // PHASE 3: status saved
+         <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
+         text-center shadow-lg transform transition-all scale-105">
+           <h2 className="text-2xl font-bold mb-4">Status Updated!</h2>
+           <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
+         </div>
+       ) : (component && workstation) ? (
+         // PHASE 2: both scanned adn then to green screen with status dropdown + confirm
+         <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
+         text-center shadow-lg transform transition-all scale-105">
+           <h2 className="text-2xl font-bold mb-2">Scan Complete!</h2>
+           <p className="text-lg font-medium mb-6 leading-relaxed">
+             {component.name} @ {workstation.name}
+           </p>
+
+           <label className="block text-left text-sm font-bold uppercase tracking-wider mb-2">
+             Update status to:
+           </label>
+           <select
+             value={selectedStatus}
+             onChange={(e) => setSelectedStatus(e.target.value)}
+             className="w-full text-slate-900 font-bold text-xl p-4 rounded-xl mb-6"
+           >
+             {STATUS_OPTIONS.map((o) => (
+               <option key={o.value} value={o.value}>{o.label}</option>
+             ))}
+           </select>
+
+           <button
+             onClick={confirmStatus}
+             disabled={isUpdating}
+             className="w-full bg-slate-900 text-white font-bold text-xl py-5 rounded-2xl
+             active:scale-95 transition-all disabled:opacity-50"
+           >
+             {isUpdating ? 'Saving...' : 'Confirm Status'}
+           </button>
+         </div>
+       ) : (
+         // PHASE 1: still scanning -> camera 
+         <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700
+         shadow-2xl relative bg-black min-h-[300px] flex items-center justify-center">
+           <Scanner 
+             onScan={handleScan}
+             onError={handleError}
+             formats={['qr_code']}
+           />
+           {isUpdating && (
+             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 backdrop-blur-sm">
+               <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
+             </div>
+           )}
+         </div>
+       )}
+
+
+      
 
       {/* NEW RESET BUTTON: Big, bottom-pinned, glove friendly */}
       {/* Use mt-auto to push flex container to absolute bottom of screen */}
