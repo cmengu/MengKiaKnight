@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { logout } from '@/app/actions/auth'
 import type { Database } from '@/types/database'
+import { WorkstationManager } from '@/app/_components/WorkstationManager'
   
 type Component = Database['public']['Tables']['components']['Row']
   
@@ -27,13 +28,15 @@ useEffect(() => {
            <p className="text-slate-400 text-center py-4">No components found or still loading...</p>
          ) : (
            componentsList.map((item) => (
-             <div key={item.id} className="flex justify-between bg-slate-700 p-4 rounded-lg items-center">               <span className="font-mono text-slate-300 text-sm">Component Name: {item.name}</span>
+             <div key={item.id} className="flex justify-between bg-slate-700 p-4 rounded-lg items-center">              
+                 <span className="font-mono text-slate-300 text-sm">Component Name: {item.name}</span>
                  <span className="font-bold text-amber-400 uppercase tracking-wider text-sm">{item.current_status}</span>
                </div>
              ))
            )}
          </div>
        </div>
+       <WorkstationManager />
        <button onClick={() => logout()} className="mt-8 text-slate-400 underline hover:text-slate-200">
           Logout
        </button>

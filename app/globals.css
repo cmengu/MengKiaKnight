@@ -17,3 +17,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {  
+  /* hide the whole app */                                                                                                                                                    
+   body * { visibility: hidden; }      
+   /* …dun dun dun except the labels */                                                                                                      
+   .qr-label, .qr-label * { visibility: visible; }             
+   /* one per page */                                                                              
+   .qr-label:not(:last-child) { page-break-after: always; }                                                                                      
+}    

@@ -1,9 +1,8 @@
 'use server'
  import { redirect } from 'next/navigation'
  import { setSessionCookie, clearSessionCookie } from '@/lib/session'
- import { createServerClient } from '@supabase/ssr'
- import { cookies } from 'next/headers'
-import { createClient } from '@supabase/supabase-js'
+ import { createClient } from '@supabase/supabase-js'
+ import { getServerSupabase } from '@/lib/supabaseServer' 
 
  //created a admin so that the profile insert works without vilating role level sec
  const adminSupabase = createClient(
@@ -11,26 +10,6 @@ import { createClient } from '@supabase/supabase-js'
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
- //simply a helpa function to get the supabase client, supabase cookies, not ours 
- async function getSupabase() {
-    const cookieStore = await cookies()
-    //this is the supabase server client
-    return createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-        //this is the function to get all the cookies
-          getAll: () => cookieStore.getAll(),
-          //when supabase server client sets a cookie, it will write cookies back to da response
-          //from the docs
-          setAll: (toSet) => toSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          ),
-        },
-      }
-    )
-  }
  //optional erroors here
  export type FormState = { errors?: { email?: string; password?: string; role?: string; general?: string } } | undefined
 
@@ -41,7 +20,7 @@ import { createClient } from '@supabase/supabase-js'
     const role     = formData.get('role') as string   
     const userName = formData.get('userName') as string
  
-    const supabase = await getSupabase()
+    const supabase = await getServerSupabase()
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return { errors: { general: error.message } }
  
@@ -64,7 +43,7 @@ import { createClient } from '@supabase/supabase-js'
     const email    = formData.get('email') as string
     const password = formData.get('password') as string
  
-    const supabase = await getSupabase()
+    const supabase = await getServerSupabase()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return { errors: { general: error.message } }
  
@@ -83,7 +62,7 @@ import { createClient } from '@supabase/supabase-js'
   }
  
   export async function logout() {
-    const supabase = await getSupabase()
+    const supabase = await getServerSupabase()
     await supabase.auth.signOut()
     await clearSessionCookie()
     redirect('/login')
