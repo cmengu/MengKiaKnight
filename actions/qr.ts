@@ -30,7 +30,7 @@
   export async function createWorkstation(prev: CreateState, form: FormData): Promise<CreateState> {
     const name = (form.get('name') as string)?.trim()             // workstations.name is NOT NULL there must be a workstation right
     const location = (form.get('location') as string)?.trim() || null
-    if (!name) return { error: 'Name is required' }
+    if (!name) return { error: 'Workstation Name is required' }
 
     const supabase = await getServerSupabase()
     const { data, error } = await supabase
@@ -42,4 +42,26 @@
 
     revalidatePath('/')
     return { created: data }
+  }
+
+  export async function createComponent(prev: CreateState, form: FormData): Promise<CreateState> {
+    const name = (form.get('name') as string)?.trim()
+    if (!name) return { error: 'Component Name is required.'}
+
+    const supabase = await getServerSupabase()
+
+    //Insert new component and default to 'pending'
+    const { data, error } = await supabase  
+      .from('components')
+      .insert({
+        name,
+        current_status: 'pending'
+      })
+      .select('id, name')
+      .single()
+
+      if (error || !data) return { error: error?.message ?? 'Could not create component'}
+
+      revalidatePath('/')
+      return { created: data }
   }

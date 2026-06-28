@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { logout } from '@/app/actions/auth';
+import { logout } from '@/actions/auth';
 
 // importing a next/dynamic wrapper to prevent camera boot up before page even reaches user browser 
 // and causing infinite loop memory crash 
