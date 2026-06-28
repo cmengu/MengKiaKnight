@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useActionState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { createWorkstation } from '@/app/actions/qr'
+import { createWorkstation } from '@/actions/qr'
 import { QrLabel } from './QrLabel'
 
 
@@ -22,10 +22,11 @@ export function WorkstationManager() {
   }, [])
 
   //then when the action returns a new row, show it immediately
+  //AND show most recent first
   useEffect(() => {
     if (state?.created) {
       const { id, name } = state.created
-      setList((prev) => [...prev, { id, name: name ?? '' }])
+      setList((prev) => [{ id, name: name ?? '' }, ...prev])
     }
   }, [state])
 
