@@ -7,16 +7,26 @@ export function useWorkerIdentity() {
 
     useEffect(() => {
         const fetchWorkerIdentity = async () => {
-            const { data: authData } = await supabase.auth.getUser();
+            const { data: authData, error: authError } = await supabase.auth.getUser();
 
-            if (authData.user) {
+            if (authError) {
+                console.error("Auth Error:", authError.message);
+                setWorkerName("Unknown Worker");
+                return;
+            }
+
+            if (authData?.user) {
                 setWorkerId(authData.user.id)
 
-                const { data: profile } = await supabase
-                .from('user_profiles')
-                .select('user_name')
-                .eq('id', authData.user.id)
-                .single();
+                const { data: profile, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('user_name')
+                    .eq('id', authData.user.id)
+                    .single();
+
+                if (profileError) {
+                    console.error("Profile Fetch Error:", profileError.message); //debugging cause broken for some reason
+                }
 
                 setWorkerName(profile?.user_name || "Unknown Worker");
             } else {

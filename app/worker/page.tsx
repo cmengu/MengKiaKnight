@@ -70,7 +70,14 @@ export default function WorkerScanner() {
       }
 
       // FINAL CHECK: Double-Tap Transaction
-      if (currentComponent && currentWorkstation && workerId) {
+      if (currentComponent && currentWorkstation) {
+        //debugging purposes, workername display failing
+        if(!workerId) {
+          setErrorMessage("Autentication Error: Cannot verify your worker ID. Please log out and log back in.");
+          setIsUpdating(false);
+          return;
+        }
+
         setIsUpdating(true);
         await scannerService.processPairing(
           currentComponent.id,
