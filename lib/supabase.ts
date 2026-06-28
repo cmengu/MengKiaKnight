@@ -1,11 +1,12 @@
-// just a simple client to connect to the supabase database, and allow for easy import
 
-import { createClient } from '@supabase/supabase-js'
+// 1. Swap createClient for createBrowserClient from the new SSR package
+import { createBrowserClient } from '@supabase/ssr'
 
-// new connection to database type
+// 2. Keep database types
 import { Database } from '@/types/database'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+// 3. Initialize the browser client (it will automatically look for cookies now!)
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseKey)

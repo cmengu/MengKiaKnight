@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { logout } from '@/app/actions/auth';
+import { logout } from '@/actions/auth';
+
 
 // importing a next/dynamic wrapper to prevent camera boot up before page even reaches user browser 
 // and causing infinite loop memory crash 
@@ -19,74 +19,73 @@ const STATUS_OPTIONS = [
   { value: 'flagged', label: 'Flagged' },
   { value: 'pending', label: 'Pending' },
 ] as const;
+//Hooks, services and components
+import { useWorkerIdentity } from '@/hooks/useWorkerIdentity';
+import { useDeviceOS } from '@/hooks/useDeviceOS';
+import { scannerService } from '@/lib/services/scannerService';
+import { MemoryDashboard } from '@/components/scanner/MemoryDashboard';
+import { PermissionInstructions } from '@/components/scanner/PermissionInstructions';
 
 //define a type for our component & workstation memory
-type ScannedComponent = { id: string; name: string };
+type ScannedComponent = { id: string; name: string, status: string };
 type ScannedStation = { id: string; name: string };
 
 export default function WorkerScanner() {
-  // 1. two part memory system for component and workstation
-  const [component, setComponent] = useState<ScannedComponent | null>(null);
-  const [workstation, setWorkStation] = useState<ScannedStation | null>(null);
+  // 1. Initialize hooks
+  const { workerName, workerId } = useWorkerIdentity();
+  const { os } = useDeviceOS();
 
   // 2. UI states
+  const [component, setComponent] = useState<ScannedComponent | null>(null);
+  const [workstation, setWorkStation] = useState<ScannedStation | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   //boolean checker to stop camera from spamming database
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('in_progress');
   //core logic: when camera sees QR code
+  const [cameraBlocked, setCameraBlocked] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
+
+  // 3. Traffic routing logic
   const handleScan = async (detectedCodes: any) => {
     // stop scanning if updating, or already successfully finished both
-    if (!detectedCodes || detectedCodes.length == 0 || isUpdating || successMessage) return;
+    if (!detectedCodes || detectedCodes.length === 0 || isUpdating || successMessage) return;
 
     const rawText = detectedCodes[0].rawValue;
     setErrorMessage(null);
 
-    // LOGIC BRANCH 1: is it a workstation?
-    if (rawText.startsWith('STATION:')) {
-      //Expected format: STATION:{name}:{UUID}
-      const parts = rawText.split(':');
-      //safety check: 3 parts present in QR code?
-      if (parts.length < 3) {
-        setErrorMessage("Invalid Station QR: Missing essential parts.");
-        return;
+    //temporary variable to hold current state
+    let currentComponent = component;
+    let currentWorkstation = workstation;
+
+    try {
+      // LOGIC BRANCH 1: Workstation
+      if (rawText.startsWith('STATION:')) {
+        const parsedStation = scannerService.parseWorkstationQR(rawText);
+        if (workstation?.id === parsedStation.id) return;
+        setWorkStation(parsedStation);
+        currentWorkstation = parsedStation;
       }
 
-      const stationName = parts[1];
-      const stationId = parts[2];
-
-      if (workstation?.id === stationId) return; //prevent double-scan same station
-
-      const newStation = { id: stationId, name: stationName };
-      setWorkStation(newStation);
-      
-    }
-
-    // LOGIC BRANCH 2 : else assume is a component
-    else {
-      if (component?.id === rawText) return; //prevent double-scan same component
-
-      setIsUpdating(true);
-      // do a .select() FIRST to verify it exists, grab its name, but dont update yet until have both!
-      const { data, error } = await supabase
-        .from('components')
-        .select('*')
-        .eq('id', rawText);
-
-      if (error || data.length === 0) {
-        setErrorMessage("Invalid QR: Component does not exist in system");
+      // LOGIC BRANCH 2: Component
+      else {
+        if (component?.id === rawText) return;
+        setIsUpdating(true);
+        const { name, currentStatus } = await scannerService.verifyComponent(rawText);
+        const newComp = { id: rawText, name, status: currentStatus };
+        setComponent(newComp);
+        currentComponent = newComp;
+      }
         setIsUpdating(false);
-        return;
       }
 
-      const compName = data[0].name || "Unknown Component";
-
-      const newComp = { id: rawText, name: compName };
-      setComponent(newComp);
+      // FINAL CHECK: Double-Tap Transaction
+      catch (err: any) {
+      setErrorMessage(err.message || "An Unexpected error occurred.");
       setIsUpdating(false);
     }
-  };
+  }; 
 
   //eeset function so worker can scan the next pair of items
   const resetScanner = () => {
@@ -95,38 +94,51 @@ export default function WorkerScanner() {
     setSuccessMessage(null);
     setErrorMessage(null);
     setSelectedStatus('in_progress');
+    setCameraBlocked(false);
+    setScannerKey(prev => prev + 1);
   }
 
   const confirmStatus = async () => {
     if (!component || !workstation || isUpdating) return;
+    if (!workerId) {
+      setErrorMessage("Authentication Error: Cannot verify your worker ID. Please log out and log back in.");
+      return;
+    }
     setIsUpdating(true);
-
-    const { error } = await supabase
-      .from('components')
-      .update({
-        current_status: selectedStatus,
-        current_workstation_id: workstation.id,
-        current_workstation_name: workstation.name,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', component.id);
-
-    if (error) {
-      setErrorMessage("Database Error: " + error.message);
-    } else {
-      const label = STATUS_OPTIONS.find((o) => o.value === selectedStatus)?.label ?? selectedStatus;
-      setSuccessMessage(`Component '${component.name}' is now ${label} at ${workstation.name}`);
+    try {
+      await scannerService.processPairing(
+        component.id,
+        component.name,
+        workstation.id,
+        workstation.name,
+        workerName,
+        workerId,
+        component.status,   // from_status (the component's existing status)
+        selectedStatus      // to_status (the worker's choice)
+      );
+      const label = STATUS_OPTIONS.find((o) => o.value === selectedStatus)?.label ??
+selectedStatus;
+      setSuccessMessage(`Component '${component.name}' is now ${label} at
+${workstation.name}`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Database Error");
     }
     setIsUpdating(false);
   };
 
 
   //if user denies camera permissions
-  const handleError = (error: unknown) => {
-    console.error(error);
-    setErrorMessage("Camera error: Please ensure permissions are granted.");
+  const handleError = (error: any) => {
+    console.error("Camera Error Payload:", error);
+    if (error?.name === 'NotAllowedError' || error?.message?.toLowerCase().includes('permission')) {
+      setCameraBlocked(true);
+      setErrorMessage(null);
+    } else {
+      setErrorMessage("Camera error: " + (error?.message || "Ensure permissions are given"));
+    }
   };
 
+  // Rendered UI
   return (
     //min-h-[100dvh] dynamic-viewport-height to perfectly fit mobile screens and prevent blockage by native navigational bar 
     //added 'relative' for the absolute logout button
@@ -137,11 +149,16 @@ export default function WorkerScanner() {
         Logout
       </button>
 
+      <div className="w-full max-w-sm mt-4 text-left">
+        <p className="text-blue-400 text-sm font-semibold uppercase tracking-wider mb-1">Active Worker</p>
+        <p className="text-white text-xl font-bold mb-4">{workerName}</p>
+      </div>
+
       {/* Adjusted top margin to account for the absolute button */}
-      <h1 className="text-3xl font-bold text-white mb-2 mt-4">Station Scanner</h1>
+      <h1 className="text-3xl font-bold text-slate-200 mb-2">Station Scanner</h1>
 
       {/* Dynamic Instruction Text */}
-      {!successMessage && !(component && workstation) && (
+      {!successMessage && !(component && workstation) && !cameraBlocked &&(
         <p className="text-slate-400 mb-6 text-center">
           {!component && !workstation && "Scan Component and Workstation QR"}
           {component && !workstation && "Component scanned! Now scan Workstation."}
@@ -149,18 +166,8 @@ export default function WorkerScanner() {
         </p>
       )}
 
-      {/* Memory Status Dashboard */}
-      <div className="flex gap-4 mb-6 w-full max-w-sm">
-        <div className={`flex-1 p-3 rounded text-center border-2 ${component ? 'border-green-500 bg-green-500/20 text-green-400' : 
-          'border-slate-700 text-slate-500'}`}>
-            <div className="text-xs uppercase font-bold tracking-wider">Component</div>
-            <div className="font-semibold truncate">{component ? component.name : 'Waiting...'}</div>
-          </div>
-        <div className={`flex-1 p-3 rounded text-center border-2 ${workstation ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-slate-700 text-slate-500'}`}>
-          <div className="text-xs uppercase font-bold tracking-wider">Workstation</div>
-          <div className="font-semibold truncate">{workstation ? workstation.name : 'Waiting...'}</div>
-        </div>
-      </div>
+      {/* Extracted MemoryDashboard Component */}
+      <MemoryDashboard component={component} workstation={workstation} />
 
       {errorMessage && (
         <div className="bg-red-500 text-white font-bold p-4 rounded-lg w-full max-w-sm mb-4 text-center">
@@ -207,7 +214,10 @@ export default function WorkerScanner() {
              {isUpdating ? 'Saving...' : 'Confirm Status'}
            </button>
          </div>
-       ) : (
+          ) : cameraBlocked ? (
+            // camera permission denied leads to OS-specific instructions
+            <PermissionInstructions os={os} />
+          ) : (
          // PHASE 1: still scanning -> camera 
          <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700
          shadow-2xl relative bg-black min-h-[300px] flex items-center justify-center">
@@ -227,16 +237,14 @@ export default function WorkerScanner() {
 
       
 
-      {/* NEW RESET BUTTON: Big, bottom-pinned, glove friendly */}
-      {/* Use mt-auto to push flex container to absolute bottom of screen */}
       <div className="w-full max-w-sm mt-auto pt-12 pb-4">
-        {/* Only show button if there is actively something to reset (component, station, error, message) */}
-        {(component || workstation || successMessage || errorMessage) && (
+        {(component || workstation || successMessage || errorMessage || cameraBlocked) && (
           <button
             onClick={resetScanner}
-            className="w-full bg-slate-800 text-slate-200 font-bold text-xl py-6 rounded-2xl border-4 border-slate-700 shadow-lg
-            active:scale-95 transition-all">
-              {successMessage ? "Scan Next Item" : "Reset Current Scan"}
+            className={`w-full font-bold text-xl py-6 rounded-2xl border-4 shadow-lg active:scale-95 transition-all ${
+              cameraBlocked ? 'bg-yellow-600 text-white border-yellow-700 hover:bg-yellow-500' : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+            }`}>
+              {successMessage ? "Scan Next Item" : cameraBlocked ? "I've allowed access,. try again" : "Reset Current Scan"}
             </button>
         )}
       </div>

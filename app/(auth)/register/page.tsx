@@ -1,6 +1,6 @@
 'use client'
   import { useActionState } from 'react'
-  import { register } from '@/app/actions/auth'
+  import { register } from '@/actions/auth'
 
   export default function RegisterPage() {
     const [state, action, pending] = useActionState(register, undefined)
