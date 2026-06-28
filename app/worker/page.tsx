@@ -36,6 +36,7 @@ export default function WorkerScanner() {
   //boolean checker to stop camera from spamming database
   const [isUpdating, setIsUpdating] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
 
   // 3. Traffic routing logic
   const handleScan = async (detectedCodes: any) => {
@@ -104,6 +105,7 @@ export default function WorkerScanner() {
     setSuccessMessage(null);
     setErrorMessage(null);
     setCameraBlocked(false);
+    setScannerKey(prev => prev + 1);
   }
 
   //if user denies camera permissions
@@ -160,7 +162,12 @@ export default function WorkerScanner() {
       ) : !successMessage ? (
         <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700 shadow-2xl relative bg-black 
         min-h-[300px] flex items-center justify-center">
-          <Scanner onScan={handleScan} onError={handleError} formats={['qr_code']} />
+          <Scanner 
+          key={scannerKey}
+            onScan={handleScan} 
+            onError={handleError} 
+            formats={['qr_code']} 
+          />
           {isUpdating && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 blackdrop-blur-sm">
               <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
