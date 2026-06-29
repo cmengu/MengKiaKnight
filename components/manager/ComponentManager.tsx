@@ -35,7 +35,7 @@ export function ComponentManager() {
 
   return (
     <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl">
-      <h2 className="text-xl text-white font-bold mb-4">Workstations</h2>
+      <h2 className="text-xl text-white font-bold mb-4">Components</h2>
 
       {/* the form calls server action */}
       <form action={formAction} className="flex gap-2 mb-2">
