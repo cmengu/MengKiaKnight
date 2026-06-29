@@ -45,7 +45,7 @@ export default function WorkerScanner() {
   const [selectedStatus, setSelectedStatus] = useState<string>('in_progress');
   //core logic: when camera sees QR code
   const [cameraBlocked, setCameraBlocked] = useState(false);
-  const [scannerKey, setScannerKey] = useState(0);
+  const [isScannerActive, setIsScannerActive ] = useState(true);
 
   // 3. Traffic routing logic
   const handleScan = async (detectedCodes: any) => {
@@ -95,7 +95,14 @@ export default function WorkerScanner() {
     setErrorMessage(null);
     setSelectedStatus('in_progress');
     setCameraBlocked(false);
-    setScannerKey(prev => prev + 1);
+    
+    //HARD RESET TO KILL SCANNER COMPLETELY AND FIX UNABLE RESCAN BUG
+    setIsScannerActive(false);
+
+    //bring back to life 50ms later, so library's cache is permanently destroyed
+    setTimeout(() => {
+      setIsScannerActive(true);
+    }, 50);
   }
 
   const confirmStatus = async () => {
@@ -178,11 +185,13 @@ ${workstation.name}`);
       {/* phase 1 camera -> phase 2 green status picker -> and thenphase 3 saved confirmation */}
       {successMessage ? (
          // PHASE 3: status saved
-         <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
-         text-center shadow-lg transform transition-all scale-105">
-           <h2 className="text-2xl font-bold mb-4">Status Updated!</h2>
-           <p className="text-lg font-medium mb-6 leading-relaxed">{successMessage}</p>
-         </div>
+         <div className="mt-4 bg-slate-800 border-2 border-emerald-500 text-white p-8 rounded-2xl w-full max-w-sm text-center shadow-[0_0_30px_rgba(16,185,129,0.2)] transform transition-all scale-105">
+            <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <h2 className="text-3xl font-bold text-emerald-400 mb-2">Status Updated!</h2>
+            <p className="text-lg text-slate-300 font-medium leading-relaxed">{successMessage}</p>
+          </div>
        ) : (component && workstation) ? (
          // PHASE 2: both scanned adn then to green screen with status dropdown + confirm
          <div className="mt-4 bg-green-500 text-white p-8 rounded-xl w-full max-w-sm
@@ -221,11 +230,14 @@ ${workstation.name}`);
          // PHASE 1: still scanning -> camera 
          <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-slate-700
          shadow-2xl relative bg-black min-h-[300px] flex items-center justify-center">
-           <Scanner 
+           {/*Conditional wrapping for reset scan debug */}
+           {isScannerActive && (
+            <Scanner 
              onScan={handleScan}
              onError={handleError}
              formats={['qr_code']}
-           />
+            />
+           )}
            {isUpdating && (
              <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 backdrop-blur-sm">
                <span className="text-white font-bold text-xl animate-pulse">Processing...</span>
