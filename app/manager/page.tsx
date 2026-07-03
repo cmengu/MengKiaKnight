@@ -4,14 +4,20 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { logout } from '@/actions/auth'
 import type { Database } from '@/types/database'
+import Link from 'next/link'
+
+import { QrWorkstationGenerator } from '@/components/manager/QrWorkstationGenerator'
+import { QrComponentGenerator } from '@/components/manager/QrComponentGenerator'
 import { WorkstationManager } from '@/components/manager/WorkstationManager'
 import { ComponentManager } from '@/components/manager/ComponentManager'
-import Link from 'next/link'
+
   
 type Component = Database['public']['Tables']['components']['Row']
   
 export default function ManagerDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'components' | 'workstations'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'components' | 'workstations' | 'qr'>('overview')
+  const [qrSubTab, setQrSubTab] = useState<'components' | 'workstations'>('components')
+
   const [componentsList, setComponentsList] = useState<Component[]>([])
   const [isLoading, setIsLoading] = useState(true)
     
@@ -55,12 +61,17 @@ useEffect(() => {
           <button
             onClick={() => setActiveTab('components')}
             className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'components' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-            Component QRs
+            Component Manager
           </button>
           <button
             onClick={() => setActiveTab('workstations')}
             className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'workstations' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-            Workstation QRs
+            Workstation Manager
+          </button>
+          <button
+            onClick={() => setActiveTab('qr')}
+            className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'qr' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+            QR Generator Hub
           </button>
         </nav>
       </div>
@@ -161,10 +172,10 @@ useEffect(() => {
       </div>
       )}
 
-      {/* TAB 2: COMPONENTS */}
+      {/* TAB 2: COMPONENT MANAGER */}
       {activeTab === 'components' && (
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-6">Component QR Generator</h2>
+          <h2 className="text-3xl font-bold text-white mb-6">Component Manager</h2>
           <ComponentManager />
        </div>
       )}
@@ -172,9 +183,37 @@ useEffect(() => {
       {/* TAB 3: WORKSTATIONS */}
       {activeTab === 'workstations' && (
             <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold text-white mb-6">Workstation Manager</h2>
               <WorkstationManager/>
             </div>
      )}
+
+      {/* Tab 4: QR GENERATOR HUB */}
+      {activeTab === 'qr' && (
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-white mb-6">QR Generator Hub</h2>
+
+          {/* Sub-navigation for QR generation */}
+          <div className="flex space-x-2 mb-6 border-b border-slate-700 pb-4">
+            <button
+              onClick={() => setQrSubTab('components')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${qrSubTab === 'components' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            >
+              Component QRs
+            </button>
+            <button
+              onClick={() => setQrSubTab('workstations')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${qrSubTab === 'workstations' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            >
+              Workstation QRs
+            </button>
+          </div>
+
+          {/* Render selected qr generator */}
+          {qrSubTab === 'components' ? <QrComponentGenerator /> : <QrWorkstationGenerator />}
+
+        </div>
+      )}
 
     </main>
    </div>

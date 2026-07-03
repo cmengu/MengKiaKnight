@@ -71,6 +71,7 @@ export type Database = {
           updated_at: string | null
           current_workstation_name: string | null
           last_updated_by: string | null
+          created_at: string
         }
         Insert: {
           current_status?: string
@@ -80,6 +81,7 @@ export type Database = {
           updated_at?: string | null
           current_workstation_name?: string | null
           last_updated_by?: string | null
+          created_at?: string
         }
         Update: {
           current_status?: string
