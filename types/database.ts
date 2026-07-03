@@ -51,7 +51,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          id?: string
+          id: string
           name?: string | null
         }
         Update: {
@@ -72,6 +72,7 @@ export type Database = {
           current_workstation_name: string | null
           last_updated_by: string | null
           created_at: string
+          deadline: string | null
         }
         Insert: {
           current_status?: string
@@ -81,7 +82,8 @@ export type Database = {
           updated_at?: string | null
           current_workstation_name?: string | null
           last_updated_by?: string | null
-          created_at?: string
+          created_at: string
+          deadline?: string | null
         }
         Update: {
           current_status?: string
@@ -91,6 +93,8 @@ export type Database = {
           updated_at?: string | null
           current_workstation_name?: string | null
           last_updated_by?: string | null
+          created_at?: string
+          deadline?: string | null
         }
         Relationships: [
           {
@@ -183,18 +187,21 @@ export type Database = {
           id: string
           location: string | null
           name: string
+          is_final_station: boolean
         }
         Insert: {
           created_at?: string | null
           id?: string
           location?: string | null
           name: string
+          is_final_station: boolean
         }
         Update: {
           created_at?: string | null
           id?: string
           location?: string | null
           name?: string
+          is_final_station?: boolean
         }
         Relationships: []
       }
