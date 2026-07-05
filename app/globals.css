@@ -12,51 +12,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ─── Design tokens ───────────────────────────────────────────────
-   Dark theme, slate family. Components reference these semantic
-   names (bg-surface-raised, text-fg-muted, text-danger …) instead
-   of raw palette classes, so retheming = editing this block only.  */
+/* Design scheme — Apple-style dark: true neutral greys (no blue cast),
+   elevation via lighter surfaces + low-opacity white separators,
+   "shine" via inset top highlights and gradient sheens on cards */
 @theme {
-  /* Surface elevation — each level steps up in luminance.
-     base = page bg · raised = cards/sidebar · hover = row/nav hover
-     overlay = dropdowns, modals, tooltips                          */
-  --color-surface-base:    #0f172a;
-  --color-surface-raised:  #1e293b;
-  --color-surface-hover:   #263449;
-  --color-surface-overlay: #334155;
+  /* surface elevation type shi — warm charcoal ladder (Octet palette) */
+  --color-surface-base:    #131315;
+  --color-surface-raised:  #232326;
+  --color-surface-hover:   #2e2e31;
+  --color-surface-overlay: #3a3a3e;
 
-  /* Borders — subtle for card edges, strong for inputs/dividers
-     that must read at a glance                                     */
-  --color-border-subtle: #2b3a50;
-  --color-border-strong: #475569;
+  /* borders — low-opacity white reads as a lit edge on dark   */
+  --color-border-subtle: rgb(255 255 255 / 0.08);
+  --color-border-strong: rgb(255 255 255 / 0.22);
 
-  /* Text — primary meets WCAG AA on all surface levels             */
-  --color-fg:           #f1f5f9;
-  --color-fg-secondary: #94a3b8;
-  --color-fg-muted:     #64748b;
+  /* text — Apple label ladder */
+  --color-fg:           #f5f5f7;
+  --color-fg-secondary: #a1a1a6;
+  --color-fg-muted:     #6e6e73;
 
-  /* Brand accent — the single saturated color; hover one step down */
   --color-brand:       #10b981;
-  --color-brand-hover: #059669;
-  --color-brand-fg:    #34d399; /* brand-colored text on dark surfaces */
+  --color-brand-hover: #0ca678;
+  --color-brand-fg:    #6ee7b7; /* soft mint, the Octet accent */
 
-  /* Status — desaturated 400-range for dark bg; for pill/soft
-     backgrounds use opacity modifiers, e.g. bg-danger/15           */
   --color-success: #34d399;
   --color-warning: #fbbf24;
   --color-danger:  #f87171;
   --color-info:    #60a5fa;
 
-  /* Elevation shadows — dark themes rely on surface shifts, so
-     these stay soft; the inset ring fakes a lit top edge           */
-  --shadow-card:    0 1px 2px 0 rgb(0 0 0 / 0.4), inset 0 1px 0 0 rgb(255 255 255 / 0.03);
-  --shadow-overlay: 0 10px 30px -6px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+  /* elevation shadows — deep drop + inset top sheen = the lit-edge shine */
+  --shadow-card:    0 1px 2px 0 rgb(0 0 0 / 0.5), 0 4px 16px -4px rgb(0 0 0 / 0.4), inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+  --shadow-overlay: 0 16px 40px -8px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+}
+
+/* Ambient glow — a faint brand-colored orb bleeding in from the top,
+   the "alive background" trick behind premium dark dashboards */
+.ambient-glow {
+  background-image:
+    radial-gradient(1100px 520px at 70% -12%, rgb(16 185 129 / 0.06), transparent 70%);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @media print {  

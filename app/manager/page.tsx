@@ -51,7 +51,7 @@ export default function ManagerDashboard() {
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 overflow-y-auto p-8 ambient-glow">
         {activeTab === 'overview' && <DashboardOverview />}
 
         {activeTab === 'components' && (

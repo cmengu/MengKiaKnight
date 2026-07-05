@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { Card } from './Card'
+import { Skeleton } from './Skeleton'
 
 type Tone = 'default' | 'brand' | 'success' | 'warning' | 'danger' | 'info'
 
@@ -27,20 +28,26 @@ export function StatCard({
   icon: Icon,
   tone = 'default',
   delta,
+  isLoading = false,
 }: {
   label: string
   value: string | number
   icon?: LucideIcon
   tone?: Tone
   delta?: string
+  isLoading?: boolean
 }) {
   return (
     <Card className="p-6">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-fg-secondary text-sm font-medium mb-2">{label}</p>
-          <h3 className={`text-3xl font-bold ${valueTone[tone]}`}>{value}</h3>
-          {delta && <p className="text-fg-muted text-xs mt-2">{delta}</p>}
+          {isLoading ? (
+            <Skeleton className="h-9 w-16" />
+          ) : (
+            <h3 className={`text-3xl font-bold ${valueTone[tone]}`}>{value}</h3>
+          )}
+          {delta && !isLoading && <p className="text-fg-muted text-xs mt-2">{delta}</p>}
         </div>
         {Icon && (
           <div className={`p-2.5 rounded-lg ${iconTone[tone]}`}>

@@ -11,7 +11,7 @@ export function StatusBadge({ status }: { status: string | null }) {
   const { classes, label } = (status && STATUS_STYLES[status]) || UNKNOWN
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${classes}`}>
-      {/* dot carries the state alongside color, for color-blind users */}
+      {/* simple feaeture for 1% color blind users */}
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {label}
     </span>

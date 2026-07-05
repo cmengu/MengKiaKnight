@@ -92,23 +92,25 @@ export function DashboardOverview() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+        {/* neutral values by design — color is reserved for the exception
+            (Flagged) so the eye lands there first */}
         <StatCard
           label="Active Components"
           value={componentsList.filter(c => c.current_status === 'in_progress').length}
           icon={Loader}
-          tone="info"
+          isLoading={isLoading}
         />
         <StatCard
           label="Pending"
           value={componentsList.filter(c => c.current_status === 'pending').length}
           icon={Clock}
-          tone="warning"
+          isLoading={isLoading}
         />
         <StatCard
           label="Completed Today"
           value={componentsList.filter(c => c.current_status === 'completed' && isToday(c.updated_at)).length}
           icon={CheckCircle2}
-          tone="success"
+          isLoading={isLoading}
         />
         <StatCard
           label="Flagged"
@@ -116,6 +118,7 @@ export function DashboardOverview() {
           icon={AlertTriangle}
           tone={flaggedCount > 0 ? 'danger' : 'default'}
           delta={flaggedCount > 0 ? 'Needs attention' : 'All clear'}
+          isLoading={isLoading}
         />
       </div>
 

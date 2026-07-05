@@ -43,11 +43,11 @@ export function SideNav<T extends string>({
                 className={`relative w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors
                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                   ${active
-                    ? 'bg-surface-hover text-fg'
+                    ? 'bg-brand/10 text-fg shadow-[0_0_18px_rgba(16,185,129,0.12)]'
                     : 'text-fg-secondary hover:bg-surface-hover hover:text-fg'}`}
               >
                 {/* active indicator bar */}
-                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-brand" />}
+                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-brand shadow-[0_0_8px_rgba(16,185,129,0.8)]" />}
                 <Icon size={18} strokeWidth={2} className={active ? 'text-brand-fg' : ''} />
                 {label}
               </button>

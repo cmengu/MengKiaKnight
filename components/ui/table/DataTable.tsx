@@ -16,7 +16,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } fr
 import { SkeletonRows } from '../Skeleton'
 import { Button } from '../Button'
 
-/** Chip-style filter on one column, e.g. status: All / Pending / Flagged */
+/** filter of status: All / Pending / Flagged */
 export type FilterTabs = {
   columnId: string
   options: { value: string; label: string }[]
@@ -64,9 +64,9 @@ export function DataTable<TData>({
   const rows = table.getRowModel().rows
 
   return (
-    <div className="bg-surface-raised rounded-xl border border-border-subtle shadow-card overflow-hidden">
+    <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200 overflow-hidden">
 
-      {/* toolbar: search + filter chips */}
+      {/* toolbar: search n filter chips */}
       <div className="p-4 border-b border-border-subtle flex flex-wrap items-center gap-3">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
@@ -91,7 +91,7 @@ export function DataTable<TData>({
                 }
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors
                   ${activeFilter === value
-                    ? 'bg-brand/15 text-brand-fg'
+                    ? 'bg-brand/15 text-brand-fg shadow-[0_0_12px_rgba(16,185,129,0.18)]'
                     : 'text-fg-secondary hover:bg-surface-hover hover:text-fg'}`}
               >
                 {label}
@@ -154,7 +154,7 @@ export function DataTable<TData>({
         </table>
       </div>
 
-      {/* pagination footer — hidden while loading or when one page suffices */}
+      {/* pagination footer so that its hidden while loading or when one page suffices */}
       {!isLoading && table.getPageCount() > 1 && (
         <div className="p-3 border-t border-border-subtle flex items-center justify-between">
           <p className="text-fg-muted text-xs">

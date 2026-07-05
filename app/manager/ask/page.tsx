@@ -31,33 +31,33 @@
    const columns = rows[0] ? Object.keys(rows[0]) : []
 
    return (
-     <main className="flex flex-col items-center min-h-screen bg-slate-600 gap-4 p-8">
-       <h1 className="text-3xl font-bold text-emerald-400">Ask Your Factory</h1>
+     <main className="flex flex-col items-center min-h-screen bg-surface-base gap-4 p-8">
+       <h1 className="text-3xl font-bold text-fg">Ask Your Factory</h1>
        <div className="w-full max-w-2xl flex gap-2">
          <input
            value={question}
            onChange={(e) => setQuestion(e.target.value)}
            onKeyDown={(e) => e.key === 'Enter' && ask()}
            placeholder="e.g. How many components are in each status?"
-           className="flex-1 px-3 py-2 rounded bg-slate-700 text-white"
+           className="flex-1 px-3 py-2 rounded-lg bg-surface-raised border border-border-strong text-fg placeholder-fg-muted focus:outline-none focus:border-brand transition-colors"
          />
          <button onClick={ask} disabled={loading || !question}
-           className="px-4 py-2 rounded bg-emerald-500 font-semibold text-white disabled:opacity-50">
+           className="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover font-semibold text-white disabled:opacity-50 transition-colors">
            {loading ? 'Asking…' : 'Ask'}
          </button>
        </div>
 
-       {error && <p className="text-red-400 max-w-2xl">{error}</p>}
-       {sql && <pre className="w-full max-w-2xl bg-slate-900 text-emerald-300 text-sm p-3 rounded
+       {error && <p className="text-danger max-w-2xl">{error}</p>}
+       {sql && <pre className="w-full max-w-2xl bg-fg text-success text-sm p-3 rounded-lg
  overflow-x-auto">{sql}</pre>}
 
        {rows.length > 0 && (
-         <table className="w-full max-w-2xl bg-slate-800 text-slate-200 text-sm rounded overflow-hidden">
+         <table className="w-full max-w-2xl bg-surface-raised border border-border-subtle shadow-card text-fg text-sm rounded-lg overflow-hidden">
            <thead><tr>{columns.map((c) => <th key={c} className="text-left px-3 py-2
- bg-slate-700">{c}</th>)}</tr></thead>
+ bg-surface-overlay text-fg-secondary text-xs uppercase tracking-wider">{c}</th>)}</tr></thead>
            <tbody>
              {rows.map((r, i) => (
-               <tr key={i} className="border-t border-slate-700">
+               <tr key={i} className="border-t border-border-subtle">
                  {columns.map((c) => <td key={c} className="px-3 py-2">{String(r[c])}</td>)}
                </tr>
              ))}
