@@ -12,6 +12,47 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ─── Design tokens ───────────────────────────────────────────────
+   Dark theme, slate family. Components reference these semantic
+   names (bg-surface-raised, text-fg-muted, text-danger …) instead
+   of raw palette classes, so retheming = editing this block only.  */
+@theme {
+  /* Surface elevation — each level steps up in luminance.
+     base = page bg · raised = cards/sidebar · hover = row/nav hover
+     overlay = dropdowns, modals, tooltips                          */
+  --color-surface-base:    #0f172a;
+  --color-surface-raised:  #1e293b;
+  --color-surface-hover:   #263449;
+  --color-surface-overlay: #334155;
+
+  /* Borders — subtle for card edges, strong for inputs/dividers
+     that must read at a glance                                     */
+  --color-border-subtle: #2b3a50;
+  --color-border-strong: #475569;
+
+  /* Text — primary meets WCAG AA on all surface levels             */
+  --color-fg:           #f1f5f9;
+  --color-fg-secondary: #94a3b8;
+  --color-fg-muted:     #64748b;
+
+  /* Brand accent — the single saturated color; hover one step down */
+  --color-brand:       #10b981;
+  --color-brand-hover: #059669;
+  --color-brand-fg:    #34d399; /* brand-colored text on dark surfaces */
+
+  /* Status — desaturated 400-range for dark bg; for pill/soft
+     backgrounds use opacity modifiers, e.g. bg-danger/15           */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger:  #f87171;
+  --color-info:    #60a5fa;
+
+  /* Elevation shadows — dark themes rely on surface shifts, so
+     these stay soft; the inset ring fakes a lit top edge           */
+  --shadow-card:    0 1px 2px 0 rgb(0 0 0 / 0.4), inset 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --shadow-overlay: 0 10px 30px -6px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
