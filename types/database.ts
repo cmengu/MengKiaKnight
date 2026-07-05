@@ -188,6 +188,8 @@ export type Database = {
           location: string | null
           name: string
           is_final_station: boolean
+          is_qa: boolean
+          is_active: boolean
         }
         Insert: {
           created_at?: string | null
@@ -195,6 +197,8 @@ export type Database = {
           location?: string | null
           name: string
           is_final_station: boolean
+          is_qa: boolean
+          is_active: boolean
         }
         Update: {
           created_at?: string | null
@@ -202,6 +206,8 @@ export type Database = {
           location?: string | null
           name?: string
           is_final_station?: boolean
+          is_qa?: boolean
+          is_active?: boolean
         }
         Relationships: []
       }
