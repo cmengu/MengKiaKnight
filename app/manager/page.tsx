@@ -20,6 +20,7 @@ export default function ManagerDashboard() {
 
   const [componentsList, setComponentsList] = useState<Component[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
     
 useEffect(() => {
     const fetchComponents = async () => {
@@ -34,6 +35,11 @@ useEffect(() => {
     fetchComponents()
  }, [])
  
+ const filteredComponents = componentsList.filter(item => 
+  item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  item.id.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
  return (
    <div className="flex h-screen bg-slate-900 text-slate-200 overflow-hidden">
     
@@ -107,19 +113,19 @@ useEffect(() => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
             <p className="text-slate-400 text-sm font-medium mb-2">Active Components</p>
-            <h3 className="text-3xl font-bold text-white">{componentsList.filter(c => c.current_status === 'in_progress').length}</h3>
+            <h3 className="text-3xl font-bold text-white">{filteredComponents.filter(c => c.current_status === 'in_progress').length}</h3>
           </div>
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
             <p className="text-slate-400 text-sm font-medium mb-2">Completed Today</p>
-            <h3 className="text-3xl font-bold text-emerald-400">{componentsList.filter(c => c.current_status === 'completed').length}</h3>
+            <h3 className="text-3xl font-bold text-emerald-400">{filteredComponents.filter(c => c.current_status === 'completed').length}</h3>
           </div>
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
             <p className="text-slate-400 text-sm font-medium mb-2">Pending</p>
-            <h3 className="text-3xl font-bold text-amber-400">{componentsList.filter(c => c.current_status === 'pending').length}</h3>
+            <h3 className="text-3xl font-bold text-amber-400">{filteredComponents.filter(c => c.current_status === 'pending').length}</h3>
           </div>
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
             <p className="text-slate-400 text-sm font-medium mb-2">Total Logged</p>
-            <h3 className="text-3xl font-bold text-blue-400">{componentsList.length}</h3>
+            <h3 className="text-3xl font-bold text-blue-400">{filteredComponents.length}</h3>
           </div>
         </div>
 
@@ -127,7 +133,9 @@ useEffect(() => {
           <div className="p-4 border-b border-slate-700 flex justify-between items-center">
             <input
               type="text" 
-              placeholder="Search components..." 
+              placeholder="Search components by name or ID.." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg w-64 
               focus:outline-none focus:border-emerald-500"
             />
@@ -147,9 +155,9 @@ useEffect(() => {
               <tbody className="divide-y divide-slate-700">
                  {isLoading ? (
                   <tr><td colSpan={5} className="p-4 text-center text-slate-500">Loading tracking data...</td></tr>
-                 ) : componentsList.length === 0 ? (
+                 ) : filteredComponents.length === 0 ? (
                   <tr><td colSpan={5} className="p-4 text-center text-slate-500">No components found.</td></tr>
-                 ) : componentsList.map((item) => (
+                 ) : filteredComponents.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-750 transition-colors">
                         <td className="p-4 font-mono text-sm text-slate-300">{item.id.substring(0,8)}...</td>
                         <td className="p-4 font-medium text-white">{item.name}</td>
