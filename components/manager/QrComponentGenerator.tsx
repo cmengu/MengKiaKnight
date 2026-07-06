@@ -49,7 +49,7 @@ export function QrComponentGenerator() {
       {state?.error && <p className="text-red-400 text-sm mb-4">{state.error}</p>}
 
       <button onClick={() => window.print()}
-          className="mb-4 px-4 py-2 rounded bg-sky-500 font-semibold text-white print:hidden">
+          className="mb-4 px-4 py-2 rounded bg-sky-600 font-semibold text-white print:hidden hover:bg-sky-500">
           Print all labels
       </button>
 

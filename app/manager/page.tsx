@@ -15,6 +15,15 @@ export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'components' | 'workstations' | 'qr'>('overview')
   const [qrSubTab, setQrSubTab] = useState<'components' | 'workstations'>('components')
 
+  const [targetQrItem, setTargetQrItem] = useState<{ id: string, name: string } | null>(null)
+
+  // Bridge function between managers and QR
+  const handleNavigateToQr = (type: 'components' | 'workstations', id: string, name: string) => {
+    setTargetQrItem({ id, name }) // Save the specific item
+    setQrSubTab(type)             // Switch to the correct sub-tab
+    setActiveTab('qr')            // Switch to the main QR tab
+  }
+
   return (
     <div className="flex h-screen bg-slate-900 text-slate-200 overflow-hidden">
 
@@ -82,9 +91,11 @@ export default function ManagerDashboard() {
 
         {/* TAB 3: WORKSTATIONS */}
         {activeTab === 'workstations' && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-6">Workstation Manager</h2>
-            <WorkstationManager />
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-6">Workstation Database</h2>
+            <WorkstationManager
+              onNavigateToQr={(id, name) => handleNavigateToQr('workstations', id, name)}
+            />
           </div>
         )}
 
@@ -110,8 +121,17 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Render selected qr generator */}
-            {qrSubTab === 'components' ? <QrComponentGenerator /> : <QrWorkstationGenerator />}
-
+            {qrSubTab === 'components' ? (
+              <QrComponentGenerator 
+                preSelectedItem={targetQrItem}
+                onClearTarget={() => setTargetQrItem(null)}  
+              />
+            ) : (
+              <QrWorkstationGenerator 
+                preSelectedItem={targetQrItem}
+                onClearTarget={() => setTargetQrItem(null)}
+              />
+            )}
           </div>
         )}
 

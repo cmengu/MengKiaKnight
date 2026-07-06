@@ -12,7 +12,11 @@ type Workstation = {
   is_active: boolean
 }
 
-export function WorkstationManager() {
+interface WorkstationManagerProps {
+  onNavigateToQr: (id: string, name: string) => void;
+}
+
+export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) {
   const [workstations, setWorkstations] = useState<Workstation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -207,7 +211,10 @@ export function WorkstationManager() {
                     <div className="flex items-center justify-end gap-3 relative">
 
                       {/* Primary Action */}
-                      <button className="text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-500 transition-colors px-4 py-2 rounded-lg shadow-md hover:shadow-lg active:scale-95">
+                      <button
+                        onClick={() => onNavigateToQr(station.id, station.name)}
+                        className="text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-500 transition-colors px-4 py-2 rounded-lg shadow-md hover:shadow-lg active:scale-95"
+                      >
                         Print Label
                       </button>
 
