@@ -9,7 +9,12 @@ import { QrLabel } from './QrLabel'
 
 type FactoryComponent = { id: string; name: string }
 
-export function QrComponentGenerator() {
+interface QrComponentGeneratorProps {
+  preSelectedItem?: { id: string, name: string } | null;
+  onClearTarget: () => void;
+}
+
+export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrComponentGeneratorProps) {
   const [list, setList] = useState<FactoryComponent[]>([])
   const [state, formAction, pending] = useActionState(createComponent, undefined)
 
