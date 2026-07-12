@@ -28,6 +28,15 @@ export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [qrSubTab, setQrSubTab] = useState<'components' | 'workstations'>('components')
 
+  const [targetQrItem, setTargetQrItem] = useState<{ id: string, name: string } | null>(null)
+
+  // Bridge function between managers and QR
+  const handleNavigateToQr = (type: 'components' | 'workstations', id: string, name: string) => {
+    setTargetQrItem({ id, name }) // Save the specific item
+    setQrSubTab(type)             // Switch to the correct sub-tab
+    setActiveTab('qr')            // Switch to the main QR tab
+  }
+
   return (
     <div className="flex h-screen bg-surface-base text-fg overflow-hidden">
 
@@ -57,16 +66,20 @@ export default function ManagerDashboard() {
         {activeTab === 'overview' && <DashboardOverview />}
 
         {activeTab === 'components' && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-fg mb-6">Component Manager</h2>
-            <ComponentManager />
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-6">Component Manager</h2>
+            <ComponentManager 
+              onNavigateToQr={(id, name) => handleNavigateToQr('components', id, name)}
+            />
           </div>
         )}
 
         {activeTab === 'workstations' && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-fg mb-6">Workstation Manager</h2>
-            <WorkstationManager />
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-6">Workstation Database</h2>
+            <WorkstationManager
+              onNavigateToQr={(id, name) => handleNavigateToQr('workstations', id, name)}
+            />
           </div>
         )}
 
@@ -82,22 +95,39 @@ export default function ManagerDashboard() {
             <h2 className="text-3xl font-bold text-fg mb-6">QR Generator Hub</h2>
 
             {/* Sub-navigation for QR generation */}
-            <div className="flex gap-2 mb-6 border-b border-border-subtle pb-4">
-              <Button
-                variant={qrSubTab === 'components' ? 'primary' : 'secondary'}
-                onClick={() => setQrSubTab('components')}
+            <div className="flex space-x-2 mb-6 border-b border-slate-700 pb-4">
+              <button
+                onClick={() => {
+                  setQrSubTab('components')
+                  setTargetQrItem(null) 
+                }}
+                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${qrSubTab === 'components' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
               >
                 Component QRs
-              </Button>
-              <Button
-                variant={qrSubTab === 'workstations' ? 'primary' : 'secondary'}
-                onClick={() => setQrSubTab('workstations')}
+              </button>
+              <button
+                onClick={() => {
+                  setQrSubTab('workstations')
+                  setTargetQrItem(null)
+                }}
+                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${qrSubTab === 'workstations' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
               >
                 Workstation QRs
               </Button>
             </div>
 
-            {qrSubTab === 'components' ? <QrComponentGenerator /> : <QrWorkstationGenerator />}
+            {/* Render selected qr generator */}
+            {qrSubTab === 'components' ? (
+              <QrComponentGenerator 
+                preSelectedItem={targetQrItem}
+                onClearTarget={() => setTargetQrItem(null)}  
+              />
+            ) : (
+              <QrWorkstationGenerator 
+                preSelectedItem={targetQrItem}
+                onClearTarget={() => setTargetQrItem(null)}
+              />
+            )}
           </div>
         )}
       </main>

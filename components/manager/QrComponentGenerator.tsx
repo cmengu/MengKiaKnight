@@ -9,19 +9,24 @@ import { QrLabel } from './QrLabel'
 
 type FactoryComponent = { id: string; name: string }
 
-export function QrComponentGenerator() {
+interface QrComponentGeneratorProps {
+  preSelectedItem?: { id: string, name: string } | null;
+  onClearTarget: () => void;
+}
+
+export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrComponentGeneratorProps) {
   const [list, setList] = useState<FactoryComponent[]>([])
   const [state, formAction, pending] = useActionState(createComponent, undefined)
 
   // firstly load existing workstations once (client-side) oni, fetches the id and name and load intoa  list
   useEffect(() => {
     supabase
-        .from('components')
-        .select('id, name')
-        .order('updated_at', { ascending: false})
-        .then(({ data }) => {
-            if (data) setList(data)
-    })
+      .from('components')
+      .select('id, name')
+      .order('updated_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setList(data)
+      })
   }, [])
 
   //then when the action returns a new row, show it immediately
@@ -32,6 +37,10 @@ export function QrComponentGenerator() {
       setList((prev) => [{ id, name: name ?? '' }, ...prev])
     }
   }, [state])
+
+  const displayList = preSelectedItem
+    ? [{ id: preSelectedItem.id, name: preSelectedItem.name }]
+    : list;
 
   return (
     <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent p-8 rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200 w-full max-w-2xl">
@@ -55,7 +64,7 @@ export function QrComponentGenerator() {
 
       {/* each component has a scannable label*/}
       <div className="grid grid-cols-2 gap-4 mt-4 print:block">
-        {list.map((c) => (
+        {displayList.map((c) => (
           <QrLabel key={c.id} value={`${c.id}`} caption={c.name} />
         ))}
       </div>

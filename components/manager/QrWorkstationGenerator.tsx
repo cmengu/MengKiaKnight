@@ -10,7 +10,12 @@ import { QrLabel } from './QrLabel'
 
 type Workstation = { id: string; name: string }
 
-export function QrWorkstationGenerator() {
+interface QrWorkstationGeneratorProps {
+  preSelectedItem?: { id: string, name: string } | null;
+  onClearTarget: () => void;
+}
+
+export function QrWorkstationGenerator({ preSelectedItem, onClearTarget }: QrWorkstationGeneratorProps) {
   const [list, setList] = useState<Workstation[]>([])
   const [state, formAction, pending] = useActionState(createWorkstation, undefined)
 
@@ -29,6 +34,11 @@ export function QrWorkstationGenerator() {
       setList((prev) => [{ id, name: name ?? '' }, ...prev])
     }
   }, [state])
+
+  // If Bridge sent data, show only that ONE item. Otherwise show whole list
+  const displayList = preSelectedItem
+    ? [{ id: preSelectedItem.id, name: preSelectedItem.name }]
+    : list;
 
   return (
     <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent p-8 rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200 w-full max-w-2xl">
@@ -52,9 +62,8 @@ export function QrWorkstationGenerator() {
           Print all labels
       </button>
 
-      {/* each workstation has a scannable label in STATION:name:uuid format */}
       <div className="grid grid-cols-2 gap-4 mt-4 print:block">
-        {list.map((w) => (
+        {displayList.map((w) => (
           <QrLabel key={w.id} value={`STATION:${w.name}:${w.id}`} caption={w.name} />
         ))}
       </div>
