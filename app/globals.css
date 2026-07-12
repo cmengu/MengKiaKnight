@@ -12,10 +12,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Design scheme — Apple-style dark: true neutral greys (no blue cast),
+   elevation via lighter surfaces + low-opacity white separators,
+   "shine" via inset top highlights and gradient sheens on cards */
+@theme {
+  /* surface elevation type shi — warm charcoal ladder (Octet palette) */
+  --color-surface-base:    #131315;
+  --color-surface-raised:  #232326;
+  --color-surface-hover:   #2e2e31;
+  --color-surface-overlay: #3a3a3e;
+
+  /* borders — low-opacity white reads as a lit edge on dark   */
+  --color-border-subtle: rgb(255 255 255 / 0.08);
+  --color-border-strong: rgb(255 255 255 / 0.22);
+
+  /* text — Apple label ladder */
+  --color-fg:           #f5f5f7;
+  --color-fg-secondary: #a1a1a6;
+  --color-fg-muted:     #6e6e73;
+
+  --color-brand:       #10b981;
+  --color-brand-hover: #0ca678;
+  --color-brand-fg:    #6ee7b7; /* soft mint, the Octet accent */
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger:  #f87171;
+  --color-info:    #60a5fa;
+
+  /* elevation shadows — deep drop + inset top sheen = the lit-edge shine */
+  --shadow-card:    0 1px 2px 0 rgb(0 0 0 / 0.5), 0 4px 16px -4px rgb(0 0 0 / 0.4), inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+  --shadow-overlay: 0 16px 40px -8px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+}
+
+/* Ambient glow — a faint brand-colored orb bleeding in from the top,
+   the "alive background" trick behind premium dark dashboards */
+.ambient-glow {
+  background-image:
+    radial-gradient(1100px 520px at 70% -12%, rgb(16 185 129 / 0.06), transparent 70%);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @media print {  
