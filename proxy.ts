@@ -6,7 +6,7 @@ import { getSessionFromRequest } from '@/lib/session'
     const { pathname } = req.nextUrl
 
     //public routes anyone can access
-    const isPublic = pathname === '/login' || pathname === '/register'
+    const isPublic = pathname === '/login' || pathname === '/register' || pathname === '/pending-approval'
     //if no sesh then redirect to login
     if (!session && !isPublic) {
       return NextResponse.redirect(new URL('/login', req.url))

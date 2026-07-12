@@ -6,9 +6,11 @@ const supabase = createClient(
 )
 
 const DEMO_USERS = [
-  { email: 'manager@demo.mengkia.com', password: 'demo-manager-123', role: 'manager', userName: 'Demo Manager' },
-  { email: 'worker@demo.mengkia.com',  password: 'demo-worker-123',  role: 'worker',  userName: 'Demo Worker' },
-  { email: 'admin@demo.mengkia.com',   password: 'demo-admin-123',   role: 'manager', userName: 'Dev Admin' },
+  { email: 'manager@demo.mengkia.com', password: 'demo-manager-123', role: 'manager', userName: 'Demo Manager',   status: 'approved' },
+  { email: 'worker@demo.mengkia.com',  password: 'demo-worker-123',  role: 'worker',  userName: 'Demo Worker',    status: 'approved' },
+  { email: 'admin@demo.mengkia.com',   password: 'demo-admin-123',   role: 'manager', userName: 'Dev Admin',      status: 'approved' },
+  // stays pending so the approval flow is instantly demoable
+  { email: 'newbie@demo.mengkia.com',  password: 'demo-newbie-123',  role: 'worker',  userName: 'Pending Worker', status: 'pending' },
 ] as const
 
 async function main() {
@@ -34,6 +36,7 @@ async function main() {
       .insert({
         id: data.user.id,
         role: u.role,
+        status: u.status,
         user_name: u.userName,
         email_account: u.email,
       })

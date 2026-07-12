@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Boxes, Factory, QrCode, Sparkles } from 'lucide-react'
+import { LayoutDashboard, Boxes, Factory, QrCode, Sparkles, UserCheck } from 'lucide-react'
 import { logout } from '@/actions/auth'
 
 import { DashboardOverview } from '@/components/manager/DashboardOverview'
@@ -10,16 +10,18 @@ import { QrWorkstationGenerator } from '@/components/manager/QrWorkstationGenera
 import { QrComponentGenerator } from '@/components/manager/QrComponentGenerator'
 import { WorkstationManager } from '@/components/manager/WorkstationManager'
 import { ComponentManager } from '@/components/manager/ComponentManager'
+import { WorkerApprovals } from '@/components/manager/WorkerApprovals'
 import { SideNav, type NavItem } from '@/components/ui/SideNav'
 import { Button } from '@/components/ui/Button'
 
-type Tab = 'overview' | 'components' | 'workstations' | 'qr'
+type Tab = 'overview' | 'components' | 'workstations' | 'qr' | 'approvals'
 
 const NAV_ITEMS: NavItem<Tab>[] = [
   { id: 'overview',     label: 'Overview Dashboard',  icon: LayoutDashboard },
   { id: 'components',   label: 'Component Manager',   icon: Boxes },
   { id: 'workstations', label: 'Workstation Manager', icon: Factory },
   { id: 'qr',           label: 'QR Generator Hub',    icon: QrCode },
+  { id: 'approvals',    label: 'Worker Approvals',    icon: UserCheck },
 ]
 
 export default function ManagerDashboard() {
@@ -65,6 +67,13 @@ export default function ManagerDashboard() {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-fg mb-6">Workstation Manager</h2>
             <WorkstationManager />
+          </div>
+        )}
+
+        {activeTab === 'approvals' && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-fg mb-6">Worker Approvals</h2>
+            <WorkerApprovals />
           </div>
         )}
 

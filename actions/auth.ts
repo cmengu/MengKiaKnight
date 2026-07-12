@@ -23,17 +23,27 @@
     const supabase = await getServerSupabase()
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return { errors: { general: error.message } }
- 
-    
+
+    //workers must be approved by a manager before they can log in
+    const status = role === 'manager' ? 'approved' : 'pending'
+
     const { error: profileError } = await adminSupabase
       .from('user_profiles')
-      .insert({ 
-        id: data.user!.id, 
+      .insert({
+        id: data.user!.id,
         role,
+        status,
         user_name: userName,
         email_account: email
       })
     if (profileError) return { errors: { general: profileError.message } }
+
+    if (status === 'pending') {
+      //signUp opened a supabase session as a side effect, close it so a pending worker holds no credentials
+      await supabase.auth.signOut()
+      redirect('/pending-approval')
+    }
+
     //user data defo exists, so just assert it
     await setSessionCookie(data.user!.id, role as 'worker' | 'manager')
     redirect('/')
@@ -49,15 +59,28 @@
  
     
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('role')
+      .select('role, status')
       .eq('id', user!.id)
       .single()
       //just a minor fix that the user is signed in to supabase, but the app treats them as unauthenticated
-      if (!profile) return { errors: { general: 'Account setup incomplete, please contact support' } }                                                                   
+      if (profileError || !profile) {
+        //surface the real db error in the server log instead of masking it (RLS errors also land here)
+        if (profileError) console.error('login profile fetch failed:', profileError.message)
+        return { errors: { general: 'Account setup incomplete, please contact support' } }
+      }
+
+      if (profile.status !== 'approved') {
+        //close the supabase session opened by signInWithPassword, unapproved users hold no credentials
+        await supabase.auth.signOut()
+        return { errors: { general: profile.status === 'pending'
+          ? 'Your account is awaiting manager approval.'
+          : 'Your account has been rejected. Contact your manager.' } }
+      }
+
       await setSessionCookie(user!.id, profile.role as 'worker' | 'manager')
- 
+
     redirect('/')
   }
  

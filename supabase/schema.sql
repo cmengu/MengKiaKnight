@@ -5,9 +5,13 @@
 -- so the id must match a real user in the auth.users table
 -- every profile is tied to one user, and if its not specified, its worker by default
 -- and a simple data validation to ensure that the role is either worker or manager
+-- status is the manager-approval gate: workers register as pending and only approved accounts can log in
   CREATE TABLE user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id),
-    role TEXT NOT NULL DEFAULT 'worker' CHECK (role IN ('worker', 'manager'))
+    role TEXT NOT NULL DEFAULT 'worker' CHECK (role IN ('worker', 'manager')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    user_name TEXT,
+    email_account TEXT
   );
 
 -- workstations (factory floor stations) 
@@ -62,7 +66,19 @@
   ALTER TABLE status_logs ENABLE ROW LEVEL SECURITY;
 
 -- this means that everyone can read their own profile
-  CREATE POLICY "read own profile" ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
+  CREATE POLICY "read own profile" ON user_profiles FOR SELECT TO authenticated USING (id = auth.uid());
+
+-- helper that reads the caller's role WITHOUT going through RLS (security definer runs as the owner)
+-- needed because a user_profiles policy that subqueries user_profiles recurses at query time
+  CREATE OR REPLACE FUNCTION get_my_role() RETURNS TEXT
+  LANGUAGE sql SECURITY DEFINER STABLE
+  AS $$ SELECT role FROM user_profiles WHERE id = auth.uid() $$;
+
+-- managers can see everyone (for the Worker Approvals tab) and update status (approve/reject)
+  CREATE POLICY "managers read all profiles" ON user_profiles FOR SELECT TO authenticated
+    USING (get_my_role() = 'manager');
+  CREATE POLICY "managers update status" ON user_profiles FOR UPDATE TO authenticated
+    USING (get_my_role() = 'manager');
 
 -- i set such that logged-in users can read
 -- so basically lets say read workstations is just a label,  and on workstation is which table it applies to, and select is for reading data only
