@@ -23,7 +23,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const [editingItem, setEditingItem] = useState<ComponentItem | null>(null)
-  const [editForm, setEditForm] = useState({ status: '', deadline: '' })
+  const [editForm, setEditForm] = useState({ status: '', date: '', time: '' })
   const [isUpdating, setIsUpdating] = useState(false)
 
   const [historyItem, setHistoryItem] = useState<ComponentItem | null>(null)
@@ -64,17 +64,41 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
 
   const handleOpenEdit = (item: ComponentItem) => {
     setEditingItem(item)
+
+    let datePart = ''
+    let timePart = ''
+
+    //safely parse deadline into local time strings
+    if (item.deadline) {
+      const d = new Date(item.deadline)
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      timePart = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+    }
+
     setEditForm({
       status: item.current_status,
-      deadline: item.deadline ? new Date(item.deadline).toISOString().slice(0, 16) : ''
+      date: datePart,
+      time: timePart
     })
   }
 
   const handleSaveEdit = async () => {
     if (!editingItem) return
+
+    //required date. if time is blank default to 23:59
+    if (!editForm.date && editForm.time) {
+      alert("You must select a date if you are setting a deadline.")
+      return
+    }
+
     setIsUpdating(true)
 
-    const newDeadline = editForm.deadline ? new Date(editForm.deadline).toISOString() : null
+    let newDeadline = null
+    if (editForm.date) {
+      const finalTime = editForm.time || '23:59'
+      newDeadline = new Date(`${editForm.date}T${finalTime}:00`).toISOString()
+    }
 
     const { error } = await supabase
       .from('components')
@@ -85,6 +109,21 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
       .eq('id', editingItem.id)
 
     if (!error) {
+      // Log manager's override in audit trail
+      const { error: logError } = await supabase
+        .from('status_logs')
+        .insert({
+          component_id: editingItem.id,
+          to_status: editForm.status,
+          worker_name:'Manager (admin)', //temp hardcoded
+          workstation_name: 'God Mode Override' 
+        })
+
+      if (logError) {
+        console.error("Failed to write audit log:", logError)
+        // dont block UI update if just the log fails, but note it in the console
+      }
+
       //update local state to reflect changes instantly
       setComponentsList(prev => prev.map(c =>
         c.id === editingItem.id
@@ -93,7 +132,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
       ))
       setEditingItem(null)
     } else {
-      alert("Failed to update component.")
+      alert("Failed to update component: " + error.message)
     }
     setIsUpdating(false)
   }
@@ -106,15 +145,20 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
     const { data, error } = await supabase
       .from('status_logs')
       .select(`
-          created_at,
-          scanned_by,
-          new_status,
-          workstations ( name )
+          timestamp,
+          worker_name,
+          to_status,
+          workstation_name
         `)
       .eq('component_id', item.id)
-      .order('created_at', { ascending: false })
+      .order('timestamp', { ascending: false })
+    if (error) {
+      console.error("History fetch error:", error)
+      alert(`Database error: ${error.message}`)
+    } else if (data) {
+      setHistoryLogs(data)
+    }
 
-    if (data) setHistoryLogs(data)
     setIsLoadingHistory(false)
   }
 
@@ -243,12 +287,20 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Adjust Deadline</label>
-                <input
-                  type="datetime-local"
-                  value={editForm.deadline}
-                  onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                    className="flex-2 bg-slate-900 border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                  <input
+                    type="time"
+                    value={editForm.time}
+                    onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
               </div>
             </div>
 
@@ -280,15 +332,15 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
                 {historyLogs.map((log, idx) => (
                   <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-600 bg-slate-800 text-slate-300 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow">
-                      {log.new_status === 'completed' ? '🏁' : log.new_status === 'defect' ? '⚠️' : '📍'}
+                      {log.to_status === 'completed' ? '🏁' : log.to_status === 'defect' ? '⚠️' : '📍'}
                     </div>
                     <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                       <div className="flex items-center justify-between space-x-2 mb-1">
-                        <div className="font-bold text-white uppercase text-xs tracking-wider">{log.new_status.replace('_', ' ')}</div>
-                        <time className="text-xs font-medium text-amber-400">{new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</time>
+                        <div className="font-bold text-white uppercase text-xs tracking-wider">{log.to_status.replace('_', ' ')}</div>
+                        <time className="text-xs font-medium text-amber-400">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
                       </div>
-                      <div className="text-sm text-slate-300 mb-2">{log.workstations?.name || 'Manager Override'}</div>
-                      <div className="text-xs text-slate-500">Operated by: {log.scanned_by}</div>
+                      <div className="text-sm text-slate-300 mb-2">{log.workstation_name || 'Manager Override'}</div>
+                      <div className="text-xs text-slate-500">Operated by: {log.worker_name}</div>
                     </div>
                   </div>
                 ))}
@@ -297,7 +349,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
           </div>
         </div>
       )}
-      
+
     </div>
   )
 }
