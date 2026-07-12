@@ -111,8 +111,8 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
     <div className="space-y-8">
 
       {/* CONTROL PANEL */}
-      <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
-        <h3 className="text-xl text-white font-bold mb-4">Add New Workstation</h3>
+      <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent p-6 rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200">
+        <h3 className="text-xl text-fg font-bold mb-4">Add New Workstation</h3>
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="flex gap-4">
             <input
@@ -120,18 +120,18 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Station Name (e.g. Soldering A)"
               required
-              className="flex-1 px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500"
+              className="flex-1 px-4 py-3 rounded-lg bg-surface-base border border-border-strong text-fg placeholder-fg-muted focus:outline-none focus:border-brand transition-colors"
             />
             <input
               value={newLocation}
               onChange={(e) => setNewLocation(e.target.value)}
               placeholder="Location (Optional)"
-              className="flex-1 px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500"
+              className="flex-1 px-4 py-3 rounded-lg bg-surface-base border border-border-strong text-fg placeholder-fg-muted focus:outline-none focus:border-brand transition-colors"
             />
           </div>
 
-          <div className="flex items-center gap-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white transition-colors">
+          <div className="flex items-center gap-6 p-4 bg-surface-base rounded-lg border border-border-subtle">
+            <label className="flex items-center gap-2 cursor-pointer text-fg-secondary hover:text-fg transition-colors">
               <input
                 type="checkbox"
                 checked={isQa}
@@ -139,12 +139,12 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
                   setIsQa(e.target.checked);
                   if (e.target.checked) setIsFinal(false); // Untick Final if QA is ticked
                 }}
-                className="w-5 h-5 rounded border-slate-600 text-purple-500 focus:ring-purple-500 bg-slate-800"
+                className="w-5 h-5 rounded border-border-strong accent-purple-600"
               />
               <span className="font-semibold">Quality Assurance (QA) Station</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white transition-colors">
+            <label className="flex items-center gap-2 cursor-pointer text-fg-secondary hover:text-fg transition-colors">
               <input
                 type="checkbox"
                 checked={isFinal}
@@ -152,7 +152,7 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
                   setIsFinal(e.target.checked);
                   if (e.target.checked) setIsQa(false); // Untick QA if Final is ticked
                 }}
-                className="w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-800"
+                className="w-5 h-5 rounded border-border-strong accent-info"
               />
               <span className="font-semibold">Final Packaging Station</span>
             </label>
@@ -161,7 +161,7 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-white disabled:opacity-50 transition-colors shadow-lg"
+            className="w-full py-3 rounded-lg bg-brand hover:bg-brand-hover font-bold text-white disabled:opacity-50 transition-all shadow-[0_0_16px_rgba(16,185,129,0.25)] hover:shadow-[0_0_22px_rgba(16,185,129,0.4)]"
           >
             {isSubmitting ? 'Provisioning Station...' : 'Create Workstation'}
           </button>
@@ -169,41 +169,41 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
       </div>
 
       {/* DATA TABLE */}
-      <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-700 bg-slate-800 flex justify-between items-center">
-          <h3 className="text-lg text-white font-bold">Active Factory Layout</h3>
-          <span className="text-slate-400 text-sm">{workstations.length} total stations</span>
+      <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200 overflow-hidden">
+        <div className="p-4 border-b border-border-subtle flex justify-between items-center">
+          <h3 className="text-lg text-fg font-bold">Active Factory Layout</h3>
+          <span className="text-fg-secondary text-sm">{workstations.length} total stations</span>
         </div>
 
         <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="bg-surface-base/50 text-fg-secondary text-xs uppercase tracking-wider">
                 <th className="p-4 font-semibold">Name</th>
                 <th className="p-4 font-semibold">Location</th>
                 <th className="p-4 font-semibold">Routing Role</th>
                 <th className="p-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700">
+            <tbody className="divide-y divide-border-subtle">
               {isLoading ? (
-                <tr><td colSpan={4} className="p-8 text-center text-slate-500">Loading factory floor...</td></tr>
+                <tr><td colSpan={4} className="p-8 text-center text-fg-muted">Loading factory floor...</td></tr>
               ) : workstations.length === 0 ? (
-                <tr><td colSpan={4} className="p-8 text-center text-slate-500">No active workstations found.</td></tr>
+                <tr><td colSpan={4} className="p-8 text-center text-fg-muted">No active workstations found.</td></tr>
               ) : workstations.map((station, index) => (
-                <tr key={station.id} className="hover:bg-slate-750 transition-colors">
-                  <td className="p-4 font-bold text-white">{station.name}</td>
-                  <td className="p-4 text-slate-400">{station.location || '-'}</td>
+                <tr key={station.id} className="hover:bg-surface-hover transition-colors">
+                  <td className="p-4 font-bold text-fg">{station.name}</td>
+                  <td className="p-4 text-fg-secondary">{station.location || '-'}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
                       {station.is_qa && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30">QA Intercept</span>
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-600/10 text-purple-700 border border-purple-600/20">QA Intercept</span>
                       )}
                       {station.is_final_station && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">Final Stage</span>
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-info/10 text-info border border-info/20">Final Stage</span>
                       )}
                       {!station.is_qa && !station.is_final_station && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-700 text-slate-300">Standard Route</span>
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-surface-overlay text-fg-secondary">Standard Route</span>
                       )}
                     </div>
                   </td>
@@ -224,7 +224,7 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
                           e.stopPropagation(); // Prevents the window click listener from immediately closing it
                           setOpenMenuId(openMenuId === station.id ? null : station.id);
                         }}
-                        className="p-2 text-slate-400 hover:text-white rounded-md hover:bg-slate-700 transition-colors"
+                        className="p-2 text-fg-secondary hover:text-fg rounded-md hover:bg-surface-hover transition-colors"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
@@ -233,11 +233,11 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
 
                       {/* The Floating Dropdown Menu */}
                       {openMenuId === station.id && (
-                        <div className={`absolute right-0 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl z-50 py-1 overflow-hidden
+                        <div className={`absolute right-0 w-48 bg-surface-raised border border-border-subtle rounded-lg shadow-overlay z-50 py-1 overflow-hidden
                           ${index === workstations.length - 1 ? 'bottom-10 mb-2' : 'top-10'}`}
                         >
                           <button
-                            className="w-full text-left px-4 py-3 text-sm font-medium text-slate-400 cursor-not-allowed border-b border-slate-700"
+                            className="w-full text-left px-4 py-3 text-sm font-medium text-fg-muted cursor-not-allowed border-b border-border-subtle"
                             disabled
                           >
                             ✏️ Edit Station (V2)
@@ -247,7 +247,7 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
                               handleDeactivate(station.id, station.name);
                               setOpenMenuId(null);
                             }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 transition-colors"
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors"
                           >
                             🗑️ Deactivate
                           </button>

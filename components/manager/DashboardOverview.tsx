@@ -1,15 +1,71 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ColumnDef } from '@tanstack/react-table'
+import { Loader, Clock, CheckCircle2, AlertTriangle, PackageSearch } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
+import { StatCard } from '@/components/ui/StatCard'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { DataTable } from '@/components/ui/table/DataTable'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type Component = Database['public']['Tables']['components']['Row']
+
+function timeAgo(dateStr: string | null): string {
+  if (!dateStr) return '-'
+  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+function isToday(dateStr: string | null): boolean {
+  return !!dateStr && new Date(dateStr).toDateString() === new Date().toDateString()
+}
+
+const columns: ColumnDef<Component>[] = [
+  {
+    accessorKey: 'id',
+    header: 'Component ID',
+    cell: ({ getValue }) => (
+      <span className="font-mono text-sm text-fg-secondary">{getValue<string>().substring(0, 8)}…</span>
+    ),
+  },
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ getValue }) => <span className="font-medium text-fg">{getValue<string>()}</span>,
+  },
+  {
+    accessorKey: 'current_workstation_name',
+    header: 'Current Station',
+    cell: ({ getValue }) => (
+      <span className="text-fg-secondary">{getValue<string | null>() || 'Unassigned'}</span>
+    ),
+  },
+  {
+    accessorKey: 'current_status',
+    header: 'Status',
+    cell: ({ getValue }) => <StatusBadge status={getValue<string | null>()} />,
+  },
+  {
+    accessorKey: 'last_updated_by',
+    header: 'Last Operator',
+    cell: ({ getValue }) => <span className="text-fg-secondary">{getValue<string | null>() || '-'}</span>,
+  },
+  {
+    accessorKey: 'updated_at',
+    header: 'Updated',
+    cell: ({ getValue }) => <span className="text-fg-muted text-sm">{timeAgo(getValue<string | null>())}</span>,
+  },
+]
 
 export function DashboardOverview() {
   const [componentsList, setComponentsList] = useState<Component[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
 
   // The database fetch now lives inside the component that actually uses it
   useEffect(() => {
@@ -21,92 +77,73 @@ export function DashboardOverview() {
 
       if (data) setComponentsList(data)
       setIsLoading(false)
-    } 
+    }
     fetchComponents()
   }, [])
 
-  // The search filter logic
-  const filteredComponents = componentsList.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    item.id.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const flaggedCount = componentsList.filter(c => c.current_status === 'flagged').length
 
   return (
-    <div className="max-w-6xl mx-auto border-transparent">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-white">Production Dashboard</h2>
-          <p className="text-slate-400 mt-1">Real-time component tracking</p>
-        </div>
+    <div className="max-w-6xl mx-auto">
+
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-fg">Production Dashboard</h2>
+        <p className="text-fg-secondary mt-1">Real-time component tracking</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
-          <p className="text-slate-400 text-sm font-medium mb-2">Active Components</p>
-          <h3 className="text-3xl font-bold text-white">{filteredComponents.filter(c => c.current_status === 'in_progress').length}</h3>
-        </div>
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
-          <p className="text-slate-400 text-sm font-medium mb-2">Completed Today</p>
-          <h3 className="text-3xl font-bold text-emerald-400">{filteredComponents.filter(c => c.current_status === 'completed').length}</h3>
-        </div>
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
-          <p className="text-slate-400 text-sm font-medium mb-2">Pending</p>
-          <h3 className="text-3xl font-bold text-amber-400">{filteredComponents.filter(c => c.current_status === 'pending').length}</h3>
-        </div>
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
-          <p className="text-slate-400 text-sm font-medium mb-2">Total Logged</p>
-          <h3 className="text-3xl font-bold text-blue-400">{filteredComponents.length}</h3>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+        {/* neutral values by design — color is reserved for the exception
+            (Flagged) so the eye lands there first */}
+        <StatCard
+          label="Active Components"
+          value={componentsList.filter(c => c.current_status === 'in_progress').length}
+          icon={Loader}
+          isLoading={isLoading}
+        />
+        <StatCard
+          label="Pending"
+          value={componentsList.filter(c => c.current_status === 'pending').length}
+          icon={Clock}
+          isLoading={isLoading}
+        />
+        <StatCard
+          label="Completed Today"
+          value={componentsList.filter(c => c.current_status === 'completed' && isToday(c.updated_at)).length}
+          icon={CheckCircle2}
+          isLoading={isLoading}
+        />
+        <StatCard
+          label="Flagged"
+          value={flaggedCount}
+          icon={AlertTriangle}
+          tone={flaggedCount > 0 ? 'danger' : 'default'}
+          delta={flaggedCount > 0 ? 'Needs attention' : 'All clear'}
+          isLoading={isLoading}
+        />
       </div>
 
-      <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-          <input
-            type="text" 
-            placeholder="Search components by name or ID.." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg w-64 
-            focus:outline-none focus:border-emerald-500"
+      <DataTable
+        columns={columns}
+        data={componentsList}
+        isLoading={isLoading}
+        searchPlaceholder="Search components..."
+        filterTabs={{
+          columnId: 'current_status',
+          options: [
+            { value: 'pending',     label: 'Pending' },
+            { value: 'in_progress', label: 'In Progress' },
+            { value: 'completed',   label: 'Completed' },
+            { value: 'flagged',     label: 'Flagged' },
+          ],
+        }}
+        emptyState={
+          <EmptyState
+            icon={PackageSearch}
+            title="No components found"
+            description="Create a component batch and print its QR labels to start tracking."
           />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
-                <th className="p-4 font-semibold">Component ID</th>
-                <th className="p-4 font-semibold">Name</th>
-                <th className="p-4 font-semibold">Current Station</th>
-                <th className="p-4 font-semibold">Status</th>
-                <th className="p-4 font-semibold">Last Operator</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-700">
-                {isLoading ? (
-                <tr><td colSpan={5} className="p-4 text-center text-slate-500">Loading tracking data...</td></tr>
-                ) : filteredComponents.length === 0 ? (
-                <tr><td colSpan={5} className="p-4 text-center text-slate-500">No components found.</td></tr>
-                ) : filteredComponents.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-750 transition-colors">
-                      <td className="p-4 font-mono text-sm text-slate-300">{item.id.substring(0,8)}...</td>
-                      <td className="p-4 font-medium text-white">{item.name}</td>
-                      <td className="p-4 text-slate-300">{item.current_workstation_name || 'Unassigned'}</td>
-                      <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                          ${item.current_status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 
-                            item.current_status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' : 
-                            'bg-amber-500/20 text-amber-400'}`}>
-                          {item.current_status || 'UNKNOWN'}
-                        </span>
-                      </td>
-                      <td className="p-4 text-slate-300">{item.last_updated_by || '-'}</td>
-                    </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        }
+      />
     </div>
   )
 }
