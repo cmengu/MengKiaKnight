@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getUrgency, getUrgencyClasses } from '@/utils/triage'
 
 //Define shape of joined data
 type ComponentItem = {
@@ -116,7 +117,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
           component_id: editingItem.id,
           to_status: editForm.status,
           worker_name:'Manager (admin)', //temp hardcoded
-          workstation_name: 'God Mode Override' 
+          workstation_name: 'Manager Override' 
         })
 
       if (logError) {
@@ -160,23 +161,6 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
     }
 
     setIsLoadingHistory(false)
-  }
-
-  // Triage Logic: determine urgency based on deadline
-  const getRowStyle = (deadline: string | null, status: string) => {
-    if (status === 'completed') return 'hover:bg-slate-750' //completed dont need alarms
-    if (!deadline) return 'hover:bg-slate-750' //no deadline means not urgent
-
-    const now = new Date()
-    const due = new Date(deadline)
-    const hoursRemaining = (due.getTime() - now.getTime()) / (1000 * 60 * 60)
-
-    if (hoursRemaining < 0) {
-      return 'bg-red-900/20 hover:bg-red-900/30 border-l-4 border-red-500' // overdue
-    } else if (hoursRemaining < 24) {
-      return 'bg-amber-900/20 hover:bg-amber-900/30 border-l-4 border-amber-500' // Due soon
-    }
-    return 'hover:bg-slate-750 border-l-4 border-transparent' //Still considered safe
   }
 
   //Search filter
@@ -223,7 +207,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
               ) : filteredComponents.length === 0 ? (
                 <tr><td colSpan={5} className="p-8 text-center text-slate-500">No components found.</td></tr>
               ) : filteredComponents.map((item) => (
-                <tr key={item.id} className={`transition-colors ${getRowStyle(item.deadline, item.current_status)}`}>
+                <tr key={item.id} className={`transition-colors ${getUrgencyClasses(getUrgency(item.deadline, item.current_status))}`}>
                   <td className="p-4 font-mono text-sm text-slate-300">{item.id.substring(0, 8)}...</td>
                   <td className="p-4">
                     <div className="font-bold text-white">{item.name}</div>
