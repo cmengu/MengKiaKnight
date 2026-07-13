@@ -43,23 +43,44 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrCompo
     : list;
 
   return (
-    <div className="bg-surface-raised bg-gradient-to-b from-white/[0.045] to-transparent p-8 rounded-xl border border-border-subtle shadow-card hover:border-border-strong transition-colors duration-200 w-full max-w-2xl">
-      <h2 className="text-xl text-fg font-bold mb-4">Components</h2>
+    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl text-white font-bold">
+          {preSelectedItem ? 'Print Specific Component' : 'Components'}
+        </h2>
+
+        {preSelectedItem && (
+          <div className="flex items-center gap-2">
+            <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+              Targeted Print Mode
+            </span>
+            <button
+              onClick={onClearTarget}
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
+            >
+              Show All Components ✕
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* the form calls server action */}
-      <form action={formAction} className="flex gap-2 mb-2">
-        <input name="name" placeholder="Component Name E.g. PCB-Board-001" required
-          className="flex-1 px-3 py-2 rounded-lg bg-surface-base border border-border-strong text-fg placeholder-fg-muted focus:outline-none focus:border-brand transition-colors" />
-        <button type="submit" disabled={pending}
-          className="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover font-semibold text-white disabled:opacity-50 transition-all shadow-[0_0_14px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.35)]">
-          {pending ? 'Creating…' : 'Create'}
-        </button>
-      </form>
-      {state?.error && <p className="text-danger text-sm mb-4">{state.error}</p>}
+      {!preSelectedItem && (
+        <form action={formAction} className="flex gap-2 mb-2">
+          <input name="name" placeholder="Component Name E.g. PCB-Board-001" required
+            className="flex-1 px-3 py-2 rounded bg-slate-700 text-white" />
+          <button type="submit" disabled={pending}
+            className="px-4 py-2 rounded bg-emerald-500 font-semibold text-white disabled:opacity-50">
+            {pending ? 'Creating…' : 'Create'}
+          </button>
+        </form> 
+      )}
+      {state?.error && <p className="text-red-400 text-sm mb-4">{state.error}</p>}
 
       <button onClick={() => window.print()}
-          className="mb-4 px-4 py-2 rounded-lg bg-info hover:bg-info/90 font-semibold text-white transition-colors print:hidden">
-          Print all labels
+        className={`mb-4 px-4 py-2 rounded font-semibold text-white print:hidden transition-colors shadow-md
+            ${preSelectedItem ? 'bg-emerald-600 hover:bg-emerald-500 w-full' : 'bg-sky-600 hover:bg-sky-500'}`}>
+        {preSelectedItem ? `Print Label for ${preSelectedItem.name}` : 'Print all labels'}
       </button>
 
       {/* each component has a scannable label*/}
