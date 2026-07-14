@@ -12,11 +12,12 @@ type FactoryComponent = { id: string; name: string }
 interface QrComponentGeneratorProps {
   preSelectedItem?: { id: string, name: string } | null;
   onClearTarget: () => void;
+  onNavigateToComponentManager: () => void;
 }
 
-export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrComponentGeneratorProps) {
+
+export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigateToComponentManager }: QrComponentGeneratorProps) {
   const [list, setList] = useState<FactoryComponent[]>([])
-  const [state, formAction, pending] = useActionState(createComponent, undefined)
 
   // firstly load existing workstations once (client-side) oni, fetches the id and name and load intoa  list
   useEffect(() => {
@@ -28,15 +29,6 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrCompo
         if (data) setList(data)
       })
   }, [])
-
-  //then when the action returns a new row, show it immediately
-  //AND add to the top of the list instantly
-  useEffect(() => {
-    if (state?.created) {
-      const { id, name } = state.created
-      setList((prev) => [{ id, name: name ?? '' }, ...prev])
-    }
-  }, [state])
 
   const displayList = preSelectedItem
     ? [{ id: preSelectedItem.id, name: preSelectedItem.name }]
@@ -66,16 +58,22 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrCompo
 
       {/* the form calls server action */}
       {!preSelectedItem && (
-        <form action={formAction} className="flex gap-2 mb-2">
-          <input name="name" placeholder="Component Name E.g. PCB-Board-001" required
-            className="flex-1 px-3 py-2 rounded bg-slate-700 text-white" />
-          <button type="submit" disabled={pending}
-            className="px-4 py-2 rounded bg-emerald-500 font-semibold text-white disabled:opacity-50">
-            {pending ? 'Creating…' : 'Create'}
+        <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3">
+          <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl mb-2">
+            🛠️
+          </div>
+          <h3 className="text-white font-bold">Create Component</h3>
+          <p className="text-sm text-slate-400 max-w-md">
+            New components must be registered through the central Component Manager.
+          </p>
+          <button
+            onClick={onNavigateToComponentManager} 
+            className="mt-4 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors active:scale-95 shadow-md"
+          >
+            Go to Component Manager →
           </button>
-        </form> 
+        </div>
       )}
-      {state?.error && <p className="text-red-400 text-sm mb-4">{state.error}</p>}
 
       <button onClick={() => window.print()}
         className={`mb-4 px-4 py-2 rounded font-semibold text-white print:hidden transition-colors shadow-md

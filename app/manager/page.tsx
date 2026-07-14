@@ -9,7 +9,7 @@ import { DashboardOverview } from '@/components/manager/DashboardOverview'
 import { QrWorkstationGenerator } from '@/components/manager/QrWorkstationGenerator'
 import { QrComponentGenerator } from '@/components/manager/QrComponentGenerator'
 import { WorkstationManager } from '@/components/manager/WorkstationManager'
-import { ComponentManager } from '@/components/manager/ComponentManager'
+import { ComponentManager } from '@/components/manager/Component/ComponentManager'
 import { WorkerApprovals } from '@/components/manager/WorkerApprovals'
 import { SideNav, type NavItem } from '@/components/ui/SideNav'
 import { Button } from '@/components/ui/Button'
@@ -35,6 +35,11 @@ export default function ManagerDashboard() {
     setTargetQrItem({ id, name }) // Save the specific item
     setQrSubTab(type)             // Switch to the correct sub-tab
     setActiveTab('qr')            // Switch to the main QR tab
+  }
+
+  const handleNavigateToManager = (type: 'components' | 'workstations') => {
+    setActiveTab(type)
+    setTargetQrItem(null)
   }
 
   return (
@@ -121,11 +126,13 @@ export default function ManagerDashboard() {
               <QrComponentGenerator 
                 preSelectedItem={targetQrItem}
                 onClearTarget={() => setTargetQrItem(null)}  
+                onNavigateToComponentManager={() => handleNavigateToManager('components')}
               />
             ) : (
               <QrWorkstationGenerator 
                 preSelectedItem={targetQrItem}
                 onClearTarget={() => setTargetQrItem(null)}
+                onNavigateToWorkstationManager={() => handleNavigateToManager('workstations')}
               />
             )}
           </div>
