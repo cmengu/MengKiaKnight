@@ -17,11 +17,11 @@ import { Button } from '@/components/ui/Button'
 type Tab = 'overview' | 'components' | 'workstations' | 'qr' | 'approvals'
 
 const NAV_ITEMS: NavItem<Tab>[] = [
-  { id: 'overview',     label: 'Overview Dashboard',  icon: LayoutDashboard },
-  { id: 'components',   label: 'Component Manager',   icon: Boxes },
+  { id: 'overview', label: 'Overview Dashboard', icon: LayoutDashboard },
+  { id: 'components', label: 'Component Manager', icon: Boxes },
   { id: 'workstations', label: 'Workstation Manager', icon: Factory },
-  { id: 'qr',           label: 'QR Generator Hub',    icon: QrCode },
-  { id: 'approvals',    label: 'Worker Approvals',    icon: UserCheck },
+  { id: 'qr', label: 'QR Generator Hub', icon: QrCode },
+  { id: 'approvals', label: 'Worker Approvals', icon: UserCheck },
 ]
 
 export default function ManagerDashboard() {
@@ -44,36 +44,37 @@ export default function ManagerDashboard() {
 
   return (
     <div className="flex h-screen bg-surface-base text-fg overflow-hidden">
+      <div className="print:hidden flex">
+        <SideNav
+          brand="MEGA"
+          subtitle="Precision Tracker"
+          items={NAV_ITEMS}
+          activeId={activeTab}
+          onSelect={setActiveTab}
+          footer={
+            <>
+              <Link
+                href="/manager/ask"
+                className="print:hidden w-full flex items-center justify-center gap-2 py-2 px-4 bg-surface-overlay hover:bg-surface-hover rounded-lg text-sm font-semibold text-brand-fg transition-colors"
+              >
+                <Sparkles size={16} />
+                Ask your factory
+              </Link>
+              <Button variant="danger" className="print:hidden w-full" onClick={() => logout()}>
+                Logout
+              </Button>
+            </>
+          }
+        />
+      </div>
 
-      <SideNav
-        brand="MEGA"
-        subtitle="Precision Tracker"
-        items={NAV_ITEMS}
-        activeId={activeTab}
-        onSelect={setActiveTab}
-        footer={
-          <>
-            <Link
-              href="/manager/ask"
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-surface-overlay hover:bg-surface-hover rounded-lg text-sm font-semibold text-brand-fg transition-colors"
-            >
-              <Sparkles size={16} />
-              Ask your factory
-            </Link>
-            <Button variant="danger" className="w-full" onClick={() => logout()}>
-              Logout
-            </Button>
-          </>
-        }
-      />
-
-      <main className="flex-1 overflow-y-auto p-8 ambient-glow">
+      <main className="flex-1 overflow-y-auto p-8 ambient-glow print:p-0 print:m-0 print:overflow-visible print:block print:w-full">
         {activeTab === 'overview' && <DashboardOverview />}
 
         {activeTab === 'components' && (
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-white mb-6">Component Manager</h2>
-            <ComponentManager 
+            <ComponentManager
               onNavigateToQr={(id, name) => handleNavigateToQr('components', id, name)}
             />
           </div>
@@ -97,14 +98,14 @@ export default function ManagerDashboard() {
 
         {activeTab === 'qr' && (
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-fg mb-6">QR Generator Hub</h2>
+            <h2 className="text-3xl font-bold text-fg mb-6 print:hidden">QR Generator Hub</h2>
 
             {/* Sub-navigation for QR generation */}
-            <div className="flex space-x-2 mb-6 border-b border-slate-700 pb-4">
+            <div className="flex space-x-2 mb-6 border-b border-slate-700 pb-4 print:hidden">
               <button
                 onClick={() => {
                   setQrSubTab('components')
-                  setTargetQrItem(null) 
+                  setTargetQrItem(null)
                 }}
                 className={`px-6 py-2 rounded-lg font-semibold transition-colors ${qrSubTab === 'components' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
               >
@@ -123,13 +124,13 @@ export default function ManagerDashboard() {
 
             {/* Render selected qr generator */}
             {qrSubTab === 'components' ? (
-              <QrComponentGenerator 
+              <QrComponentGenerator
                 preSelectedItem={targetQrItem}
-                onClearTarget={() => setTargetQrItem(null)}  
+                onClearTarget={() => setTargetQrItem(null)}
                 onNavigateToComponentManager={() => handleNavigateToManager('components')}
               />
             ) : (
-              <QrWorkstationGenerator 
+              <QrWorkstationGenerator
                 preSelectedItem={targetQrItem}
                 onClearTarget={() => setTargetQrItem(null)}
                 onNavigateToWorkstationManager={() => handleNavigateToManager('workstations')}

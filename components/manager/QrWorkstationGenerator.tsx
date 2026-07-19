@@ -17,6 +17,7 @@ interface QrWorkstationGeneratorProps {
 
 export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavigateToWorkstationManager }: QrWorkstationGeneratorProps) {
   const [list, setList] = useState<Workstation[]>([])
+  const [localTarget, setLocalTarget] = useState<{ id: string, name: string } | null>(null)
 
   // firstly load existing workstations once (client-side) oni, fetches the id and name and load intoa  list
   useEffect(() => {
@@ -25,27 +26,33 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
     })
   }, [])
 
+  const activeTarget = preSelectedItem || localTarget;
+
   // If Bridge sent data, show only that ONE item. Otherwise show whole list
-  const displayList = preSelectedItem
-    ? [{ id: preSelectedItem.id, name: preSelectedItem.name }]
+  const displayList = activeTarget
+    ? [{ id: activeTarget.id, name: activeTarget.name }]
     : list;
 
   return (
-    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl">
+    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl
+    print:bg-transparent print:border-none print:p-0 print:m-0 print:max-w-full print:w-full print:block">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl text-white font-bold">
-          {preSelectedItem ? 'Print Specific Workstation' : 'Workstations'}
+        <h2 className="text-xl text-white font-bold print:hidden">
+          {activeTarget ? 'Print Specific Workstation' : 'Workstations'}
         </h2>
 
         {/* The Emergency Exit Control */}
-        {preSelectedItem && (
-          <div className="flex items-center gap-2">
+        {activeTarget && (
+          <div className="flex items-center gap-2 print:hidden">
             <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
               Targeted Print Mode
             </span>
             <button
-              onClick={onClearTarget}
-              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
+              onClick={() => {
+                onClearTarget();
+                setLocalTarget(null);
+              }}
+              className="print:hidden px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
             >
               Show All Stations ✕
             </button>
@@ -54,8 +61,8 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
       </div>
 
       {/* Hide the creation form if we are just here to print a specific label */}
-      {!preSelectedItem && (
-        <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3">
+      {!activeTarget && (
+        <div className="print:hidden mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3">
           <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl mb-2">
             🛠️
           </div>
@@ -64,7 +71,7 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
             New Workstations must be registered through the central Workstation Manager.
           </p>
           <button
-            onClick={onNavigateToWorkstationManager} 
+            onClick={onNavigateToWorkstationManager}
             className="mt-4 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors active:scale-95 shadow-md"
           >
             Go to Workstation Manager →
@@ -72,15 +79,27 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
         </div>
       )}
 
-      <button onClick={() => window.print()}
-        className={`mb-4 px-4 py-2 rounded font-semibold text-white print:hidden transition-colors shadow-md
-            ${preSelectedItem ? 'bg-emerald-600 hover:bg-emerald-500 w-full' : 'bg-sky-600 hover:bg-sky-500'}`}>
-        {preSelectedItem ? `Print Label for ${preSelectedItem.name}` : 'Print all labels'}
-      </button>
-
-      <div className="grid grid-cols-2 gap-4 mt-4 print:block">
+      <div className="grid grid-cols-2 gap-4 mt-4 print:block print:w-full print:m-0">
         {displayList.map((w) => (
-          <QrLabel key={w.id} value={`STATION:${w.name}:${w.id}`} caption={w.name} />
+          /* Wrap the label and button in a container */
+          <div key={w.id} className="flex flex-col items-center bg-slate-800 p-4 rounded-xl border border-slate-700 print:p-0 print:border-none print:bg-transparent print:block">
+
+            <QrLabel key={w.id} value={`STATION:${w.name}:${w.id}`} caption={w.name} />
+
+            {/* The Individual Print Button */}
+            {!activeTarget && (
+              <button
+                onClick={() => {
+                  setLocalTarget({ id: w.id, name: w.name });
+                  setTimeout(() => window.print(), 100); // Wait 1 tick for state to update, then print!
+                }}
+                className="mt-4 px-4 py-2 w-full max-w-[160px] bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors print:hidden shadow-sm"
+              >
+                🖨️ Print QR
+              </button>
+            )}
+
+          </div>
         ))}
       </div>
     </div>

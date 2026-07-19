@@ -58,11 +58,20 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media print {  
-  /* hide the whole app */                                                                                                                                                    
-   body * { visibility: hidden; }      
-   /* …dun dun dun except the labels */                                                                                                      
-   .qr-label, .qr-label * { visibility: visible; }             
-   /* one per page */                                                                              
-   .qr-label:not(:last-child) { page-break-after: always; }                                                                                      
-}    
+@media print {
+  @page { margin: 0; }
+  
+  /* THIS UNLOCKS MULTI-PAGE PRINTING */
+  html, body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+}
