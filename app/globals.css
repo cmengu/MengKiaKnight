@@ -59,10 +59,16 @@ body {
 }
 
 @media print {
-  /* Hides the browser URLs and timestamps */
   @page { margin: 0; }
   
-  /* Forces colors to print properly */
+  /* THIS UNLOCKS MULTI-PAGE PRINTING */
+  html, body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
