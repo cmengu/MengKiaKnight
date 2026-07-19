@@ -11,7 +11,8 @@
     "test": "jest --testPathIgnorePatterns=integration",
     "test:watch": "jest --watch --testPathIgnorePatterns=integration",
     "test:integration": "jest __tests__/integration --passWithNoTests",
-    "eval": "tsx eval/run.ts"
+    "eval": "tsx eval/run.ts",
+    "seed:factory": "tsx scripts/seed-factory.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
