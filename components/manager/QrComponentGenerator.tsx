@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useActionState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { createComponent } from '@/actions/qr'
 import { QrLabel } from './QrLabel'
 
 
@@ -35,8 +34,11 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
     : list;
 
   return (
-    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl print:bg-transparent print:border-none print:p-0 print:m-0 print:max-w-full">
+      {/* 1. Added print overrides to break out of the max-width */}
+
+      {/* 2. Added print:hidden to completely remove the header */}
+      <div className="flex justify-between items-center mb-4 print:hidden">
         <h2 className="text-xl text-white font-bold">
           {preSelectedItem ? 'Print Specific Component' : 'Components'}
         </h2>
@@ -57,8 +59,9 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
       </div>
 
       {/* the form calls server action */}
+      {/* 3. Added print:hidden to completely remove the Create block */}
       {!preSelectedItem && (
-        <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3">
+        <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3 print:hidden">
           <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl mb-2">
             🛠️
           </div>
@@ -82,7 +85,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
       </button>
 
       {/* each component has a scannable label*/}
-      <div className="grid grid-cols-2 gap-4 mt-4 print:block">
+      <div className="grid grid-cols-2 gap-4 mt-4 print:block print:w-full print:m-0">
         {displayList.map((c) => (
           <QrLabel key={c.id} value={`${c.id}`} caption={c.name} />
         ))}

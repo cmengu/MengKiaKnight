@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useActionState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { createWorkstation } from '@/actions/qr'
 import { QrLabel } from './QrLabel'
 
 

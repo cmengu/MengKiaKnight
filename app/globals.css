@@ -58,11 +58,14 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media print {  
-  /* hide the whole app */                                                                                                                                                    
-   body * { visibility: hidden; }      
-   /* …dun dun dun except the labels */                                                                                                      
-   .qr-label, .qr-label * { visibility: visible; }             
-   /* one per page */                                                                              
-   .qr-label:not(:last-child) { page-break-after: always; }                                                                                      
-}    
+@media print {
+  /* Hides the browser URLs and timestamps */
+  @page { margin: 0; }
+  
+  /* Forces colors to print properly */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+}
