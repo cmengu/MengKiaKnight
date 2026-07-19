@@ -14,6 +14,14 @@ type ComponentItem = {
   workstations: { name: string } | null // This comes from the Supabase join
 }
 
+// exactly the 4 cols the history drawer selects out of status_logs, nothing else
+type HistoryLog = {
+  timestamp: string | null // nullable in the db, so the drawer has to handle it
+  to_status: string
+  worker_name: string | null
+  workstation_name: string | null
+}
+
 interface ComponentManagerProps {
   onNavigateToQr: (id: string, name: string) => void;
 }
@@ -28,15 +36,15 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const [historyItem, setHistoryItem] = useState<ComponentItem | null>(null)
-  const [historyLogs, setHistoryLogs] = useState<any[]>([])
+  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
-  useEffect(() => {
-    fetchComponents()
-  }, [])
-
+  // declared b4 the effect below on purpose — hoisting a `const` arrow fn under
+  // its own caller leaves it in the temporal dead zone
   const fetchComponents = async () => {
-    setIsLoading(true)
+    // no setIsLoading(true) up here — dis only ever runs on mount and isLoading
+    // already starts as true, so flipping it again synchronously inside the
+    // effect just buys us a wasted render for zero visual difference
 
     //use a join here to get actual name of workstation, not just ID
     const { data, error } = await supabase
@@ -60,6 +68,14 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
 
     setIsLoading(false)
   }
+
+  // TODO(tech-debt): fetch-on-mount. React Compiler is right to moan — the real
+  // fix is loading dis server-side or thru a query lib w/ caching, not an effect.
+  // grandfathered for now so the rule stays an ERROR for any new code we write.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchComponents()
+  }, [])
 
   // Logic: God Mode Edit
 
@@ -321,7 +337,7 @@ export function ComponentManager({ onNavigateToQr }: ComponentManagerProps) {
                     <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                       <div className="flex items-center justify-between space-x-2 mb-1">
                         <div className="font-bold text-white uppercase text-xs tracking-wider">{log.to_status.replace('_', ' ')}</div>
-                        <time className="text-xs font-medium text-amber-400">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                        <time className="text-xs font-medium text-amber-400">{log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</time>
                       </div>
                       <div className="text-sm text-slate-300 mb-2">{log.workstation_name || 'Manager Override'}</div>
                       <div className="text-xs text-slate-500">Operated by: {log.worker_name}</div>

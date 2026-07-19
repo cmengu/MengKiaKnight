@@ -30,13 +30,18 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget }: QrCompo
   }, [])
 
   //then when the action returns a new row, show it immediately
-  //AND add to the top of the list instantly
-  useEffect(() => {
+  //AND add to the top of the list instantly.
+  // dis is React's "adjust state while rendering" pattern instead of an effect —
+  // the seenState guard makes it fire once per actual action result, and React
+  // re-runs render b4 painting so the user never sees the stale list.
+  const [seenState, setSeenState] = useState(state)
+  if (state !== seenState) {
+    setSeenState(state)
     if (state?.created) {
       const { id, name } = state.created
       setList((prev) => [{ id, name: name ?? '' }, ...prev])
     }
-  }, [state])
+  }
 
   const displayList = preSelectedItem
     ? [{ id: preSelectedItem.id, name: preSelectedItem.name }]

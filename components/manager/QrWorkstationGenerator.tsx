@@ -27,13 +27,18 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget }: QrWor
   }, [])
 
   //then when the action returns a new row, show it immediately
-  //AND show most recent first
-  useEffect(() => {
+  //AND show most recent first.
+  // dis is React's "adjust state while rendering" pattern instead of an effect —
+  // the seenState guard makes it fire once per actual action result, and React
+  // re-runs render b4 painting so the user never sees the stale list.
+  const [seenState, setSeenState] = useState(state)
+  if (state !== seenState) {
+    setSeenState(state)
     if (state?.created) {
       const { id, name } = state.created
       setList((prev) => [{ id, name: name ?? '' }, ...prev])
     }
-  }, [state])
+  }
 
   // If Bridge sent data, show only that ONE item. Otherwise show whole list
   const displayList = preSelectedItem

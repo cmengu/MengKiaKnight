@@ -13,7 +13,8 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     // Handle module aliases (this matches the "@/*" in your tsconfig.json)
-    '^@/(.*)$': '<rootDir>/src/$1',
+    // no src/ folder in dis project — everything lives at root
+    '^@/(.*)$': '<rootDir>/$1',
   },
 }
  
