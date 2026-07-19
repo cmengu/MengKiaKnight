@@ -9,8 +9,17 @@ interface Props {
   onClose: () => void;
 }
 
+// exactly the 4 cols the select below asks for, nothing else. timestamp is nullable
+// in the db, so the timeline has to cope with that.
+type HistoryLog = {
+  timestamp: string | null
+  to_status: string
+  updated_by: string | null
+  workstation_name: string | null
+}
+
 export function HistoryDrawer({ item, onClose }: Props) {
-  const [historyLogs, setHistoryLogs] = useState<any[]>([])
+  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
   // Fetch the logs automatically when the item is passed in
@@ -25,6 +34,7 @@ export function HistoryDrawer({ item, onClose }: Props) {
         .eq('component_id', item.id)
         .order('timestamp', { ascending: false })
 
+      if (error) console.error('History fetch error:', error)
       if (data) setHistoryLogs(data)
       setIsLoadingHistory(false)
     }
@@ -56,7 +66,7 @@ export function HistoryDrawer({ item, onClose }: Props) {
                 <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                   <div className="flex items-center justify-between space-x-2 mb-1">
                     <div className="font-bold text-white uppercase text-xs tracking-wider">{log.to_status.replace('_', ' ')}</div>
-                    <time className="text-xs font-medium text-amber-400">{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</time>
+                    <time className="text-xs font-medium text-amber-400">{log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'}</time>
                   </div>
                   <div className="text-sm text-slate-300 mb-2">{log.workstation_name || 'Manager Override'}</div>
                   <div className="text-xs text-slate-500">Operated by: {log.updated_by}</div>

@@ -16,13 +16,11 @@ export function WorkerApprovals() {
   const [isLoading, setIsLoading] = useState(true)
   const [actingId, setActingId] = useState<string | null>(null)
 
-  // 1. Fetch pending registrations on load
-  useEffect(() => {
-    fetchPending()
-  }, [])
-
+  // has to be declared b4 the effect that calls it, otherwise it's still in the
+  // temporal dead zone when the effect body gets built
   const fetchPending = async () => {
-    setIsLoading(true)
+    // isLoading already starts true + dis only runs on mount, so no need to set
+    // it again — doing it synchronously in an effect = one wasted render
     const { data, error } = await supabase
       .from('user_profiles')
       .select('id, user_name, email_account, role, status')
@@ -32,6 +30,14 @@ export function WorkerApprovals() {
     if (data) setWorkers(data)
     setIsLoading(false)
   }
+
+  // 1. Fetch pending registrations on load
+  // TODO(tech-debt): same fetch-on-mount pattern as ComponentManager — should be
+  // server-side or a query lib. grandfathered so the rule stays strict for new code.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPending()
+  }, [])
 
   // 2. Approve or reject — RLS only lets managers do this update
   const handleDecision = async (id: string, decision: 'approved' | 'rejected') => {

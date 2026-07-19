@@ -29,20 +29,30 @@ export function ComponentManager({ onNavigateToQr }: Props) {
   const [editingItem, setEditingItem] = useState<ComponentItem | null>(null)
   const [historyItem, setHistoryItem] = useState<ComponentItem | null>(null)
 
-  useEffect(() => {
-    fetchComponents()
-  }, [])
-
+  // declared b4 the effect that calls it — a `const` arrow fn defined under its own
+  // caller is still in the temporal dead zone when the effect closure gets built
   const fetchComponents = async () => {
-    setIsLoading(true)
+    // no setIsLoading(true) here: dis only runs on mount and isLoading already
+    // starts true, so setting it again just costs us a wasted render
+
     const { data, error } = await supabase
       .from('components')
       .select(`id, name, current_status, deadline, last_updated_by, workstations ( name )`)
       .order('deadline', { ascending: true, nullsFirst: false })
 
+    // we were throwing dis away — silent empty table with no clue why
+    if (error) console.error('Error fetching components:', error)
     if (data) setComponentsList(data as unknown as ComponentItem[])
     setIsLoading(false)
   }
+
+  // TODO(tech-debt): fetch-on-mount. React Compiler is right to moan — the real fix
+  // is loading dis server-side or thru a query lib w/ caching, not an effect.
+  // grandfathered so the rule stays an ERROR for any new code we write.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchComponents()
+  }, [])
 
   const filteredComponents = componentsList.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

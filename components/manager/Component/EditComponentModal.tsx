@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ComponentItem } from './ComponentManager'
 
@@ -10,24 +10,35 @@ interface Props {
   onSuccess: (id: string, newStatus: string, newDeadline: string | null) => void;
 }
 
+// splitting an iso deadline into the two values the date + time inputs want.
+// pulled out of the component so it can be called from both places below.
+function formFor(item: ComponentItem | null) {
+  if (!item) return { status: '', date: '', time: '' }
+
+  let datePart = ''
+  let timePart = ''
+  if (item.deadline) {
+    const d = new Date(item.deadline)
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    timePart = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+  return { status: item.current_status, date: datePart, time: timePart }
+}
+
 export function EditComponentModal({ item, onClose, onSuccess }: Props) {
-  const [editForm, setEditForm] = useState({ status: '', date: '', time: '' })
+  const [editForm, setEditForm] = useState(() => formFor(item))
   const [isUpdating, setIsUpdating] = useState(false)
 
-  // Auto-fill the form when the item is passed in
-  useEffect(() => {
-    if (item) {
-      let datePart = ''
-      let timePart = ''
-      if (item.deadline) {
-        const d = new Date(item.deadline)
-        const pad = (n: number) => n.toString().padStart(2, '0')
-        datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-        timePart = `${pad(d.getHours())}:${pad(d.getMinutes())}`
-      }
-      setEditForm({ status: item.current_status, date: datePart, time: timePart })
-    }
-  }, [item])
+  // Auto-fill the form when a different item is passed in.
+  // React's "adjust state while rendering" pattern rather than an effect — the
+  // seenItem guard means it only refills when the item ACTUALLY changes, and React
+  // re-runs render b4 painting so the manager never sees the old item's values.
+  const [seenItem, setSeenItem] = useState(item)
+  if (item !== seenItem) {
+    setSeenItem(item)
+    setEditForm(formFor(item))
+  }
 
   if (!item) return null;
 

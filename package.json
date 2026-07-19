@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "eval": "jest --watch"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --testPathIgnorePatterns=integration",
+    "test:watch": "jest --watch --testPathIgnorePatterns=integration",
+    "test:integration": "jest __tests__/integration --passWithNoTests",
+    "eval": "tsx eval/run.ts",
+    "seed:factory": "tsx scripts/seed-factory.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
@@ -37,6 +41,7 @@
     "jest-environment-jsdom": "^30.4.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5"
   }
 }

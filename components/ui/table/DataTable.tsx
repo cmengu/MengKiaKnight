@@ -22,7 +22,7 @@ export type FilterTabs = {
   options: { value: string; label: string }[]
 }
 
-export function DataTable<TData>({
+export function DataTable<TData, TValue = unknown>({
   columns,
   data,
   isLoading = false,
@@ -31,7 +31,8 @@ export function DataTable<TData>({
   emptyState,
   pageSize = 10,
 }: {
-  columns: ColumnDef<TData, any>[]
+  // TValue rides along so callers keep their real cell type instead of `any`
+  columns: ColumnDef<TData, TValue>[]
   data: TData[]
   isLoading?: boolean
   searchPlaceholder?: string
