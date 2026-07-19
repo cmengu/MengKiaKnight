@@ -1,6 +1,8 @@
 'use client'
 
-type ScannedComponent = { id: string, name: string; status:string };
+// only the names get rendered, so keep these loose enough to accept whatever the
+// scanner service hands back
+type ScannedComponent = { id: string, name: string };
 type ScannedStation = { id: string; name: string };
 
 export function MemoryDashboard({ component, workstation}: { component: ScannedComponent | null, workstation: ScannedStation | null }) {

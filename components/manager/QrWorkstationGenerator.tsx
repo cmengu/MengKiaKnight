@@ -1,12 +1,11 @@
 'use client'
-import { useState, useEffect, useActionState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { createWorkstation } from '@/actions/qr'
 import { QrLabel } from './QrLabel'
 
 
-//literally type a name, click create, the formAction will run the function createWorkstation on the server ->
-// ->  DB adds row + UUID -> returns as state created -> useEffect updates the list -> Qr label generates a QR
+// dis is print-only now. creating workstations moved into WorkstationManager, so
+// all this does is list what's already there and turn each row into a QR label.
 
 type Workstation = { id: string; name: string }
 

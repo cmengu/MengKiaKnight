@@ -37,22 +37,30 @@ export function WorkstationManager({ onNavigateToQr }: WorkstationManagerProps) 
     return () => window.removeEventListener('click', handleClickOutside)
   }, [])
 
-  // 1. Fetch Active Workstations on load
-  useEffect(() => {
-    fetchWorkstations()
-  }, [])
-
+  // 1. Fetch Active Workstations on load.
+  // declared above its own effect — a `const` arrow fn defined after the caller
+  // is still in the temporal dead zone when the effect closure is created
   const fetchWorkstations = async () => {
-    setIsLoading(true)
+    // isLoading already starts true + dis only runs on mount, so no need to set
+    // it again — doing it synchronously in an effect = one wasted render
     const { data, error } = await supabase
       .from('workstations')
       .select('*')
       .eq('is_active', true) //only fetch active ones
       .order('created_at', { ascending: false })
 
+    // we were swallowing dis error completely b4 — silent empty list, no clue y
+    if (error) console.error('Error fetching workstations:', error)
     if (data) setWorkstations(data)
     setIsLoading(false)
   }
+
+  // TODO(tech-debt): same fetch-on-mount pattern as ComponentManager — should be
+  // server-side or a query lib. grandfathered so the rule stays strict for new code.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchWorkstations()
+  }, [])
 
   // 2. Create new workstation
   const handleCreate = async (e: React.SyntheticEvent) => {

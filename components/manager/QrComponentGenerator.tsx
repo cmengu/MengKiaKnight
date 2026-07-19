@@ -1,11 +1,11 @@
 'use client'
-import { useState, useEffect, useActionState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { createComponent } from '@/actions/qr'
 import { QrLabel } from './QrLabel'
 
 
-//literally a clone of Meng's WorkstationManager
+// print-only now — creating components moved into ComponentManager. dis just lists
+// what exists and turns each row into a QR label.
 
 type FactoryComponent = { id: string; name: string }
 

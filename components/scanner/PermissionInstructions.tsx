@@ -5,13 +5,15 @@ export function PermissionInstructions({ os }: { os: string }){
         if (os === 'iOS') {
             return (
                 <ul className="text-left text-sm text-slate-300 list-disc pl-5 space-y-2 mt-4">
-                    <li>Tap the <strong>'Aa'</strong> icon in your URL bar.</li>
+                    <li>Tap the <strong>&apos;Aa&apos;</strong> icon in your URL bar.</li>
                     <li>Tap <strong>Website Settings</strong>.</li>
                     <li>Change Camera to <strong>Allow</strong>.</li>
                 </ul>
             );
         }
-        if (os === 'Andriod') {
+        // NOTE: dis used to say 'Andriod' — typo meant android ppl always fell
+        // thru to the desktop steps. useDeviceOS returns 'Android', so match dat.
+        if (os === 'Android') {
             return (
             <ul className="text-left text-sm text-slate-300 list-disc pl-5 space-y-2 mt-4">
                 <li>Tap the <strong>Lock icon</strong> next to the URL.</li>
@@ -22,7 +24,7 @@ export function PermissionInstructions({ os }: { os: string }){
         }
         return (
             <ul className="text-left text-sm text-slate-300 list-disc pl-5 space-y-2 mt-4">
-                <li>Click the <strong>Lock icon</strong> in your browser's URL bar.</li>
+                <li>Click the <strong>Lock icon</strong> in your browser&apos;s URL bar.</li>
                 <li>Change Camera from Block to <strong>Allow</strong>.</li>
             </ul>
         );
