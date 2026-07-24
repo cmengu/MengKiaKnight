@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Boxes, Factory, QrCode, Sparkles, UserCheck } from 'lucide-react'
+import { LayoutDashboard, Boxes, Factory, Map, QrCode, Sparkles, UserCheck } from 'lucide-react'
 import { logout } from '@/actions/auth'
 
 import { DashboardOverview } from '@/components/manager/DashboardOverview'
@@ -11,17 +11,19 @@ import { QrComponentGenerator } from '@/components/manager/QrComponentGenerator'
 import { WorkstationManager } from '@/components/manager/WorkstationManager'
 import { ComponentManager } from '@/components/manager/Component/ComponentManager'
 import { WorkerApprovals } from '@/components/manager/WorkerApprovals'
+import { FloorView } from '@/components/floor/FloorView'
 import { SideNav, type NavItem } from '@/components/ui/SideNav'
 import { Button } from '@/components/ui/Button'
 
-type Tab = 'overview' | 'components' | 'workstations' | 'qr' | 'approvals'
+type Tab = 'overview' | 'floor' | 'components' | 'workstations' | 'qr' | 'approvals'
 
 const NAV_ITEMS: NavItem<Tab>[] = [
-  { id: 'overview', label: 'Overview Dashboard', icon: LayoutDashboard },
-  { id: 'components', label: 'Component Manager', icon: Boxes },
+  { id: 'overview',     label: 'Overview Dashboard',  icon: LayoutDashboard },
+  { id: 'floor',        label: 'Factory Floor',       icon: Map },
+  { id: 'components',   label: 'Component Manager',   icon: Boxes },
   { id: 'workstations', label: 'Workstation Manager', icon: Factory },
-  { id: 'qr', label: 'QR Generator Hub', icon: QrCode },
-  { id: 'approvals', label: 'Worker Approvals', icon: UserCheck },
+  { id: 'qr',           label: 'QR Generator Hub',    icon: QrCode },
+  { id: 'approvals',    label: 'Worker Approvals',    icon: UserCheck },
 ]
 
 export default function ManagerDashboard() {
@@ -70,6 +72,16 @@ export default function ManagerDashboard() {
 
       <main className="flex-1 overflow-y-auto p-8 ambient-glow print:p-0 print:m-0 print:overflow-visible print:block print:w-full">
         {activeTab === 'overview' && <DashboardOverview />}
+
+        {activeTab === 'floor' && (
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-1">Factory Floor</h2>
+            <p className="text-slate-400 mb-6">
+              Live map of where every component is. Drag stations to match your real layout.
+            </p>
+            <FloorView />
+          </div>
+        )}
 
         {activeTab === 'components' && (
           <div className="max-w-6xl mx-auto">
