@@ -30,6 +30,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
         if (data) setList(data)
       })
   }, [])
+  
   const activeTarget = preSelectedItem || localTarget;
 
   const displayList = activeTarget

@@ -85,6 +85,7 @@ export default function WorkerScanner() {
         // that's also how we find out if dis is the final station, which decides
         // whether "Completed" is even on the menu
         const verified = await scannerService.verifyWorkstation(parsed.id);
+
         setWorkStation(verified);
       }
 
@@ -100,6 +101,9 @@ export default function WorkerScanner() {
 
     // FINAL CHECK: Double-Tap Transaction
     catch (err: unknown) {
+
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      
       setErrorMessage(errMessage(err, "An Unexpected error occurred."));
     }
 
