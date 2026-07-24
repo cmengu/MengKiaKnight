@@ -92,7 +92,7 @@ export function EditComponentModal({ item, onClose, onSuccess }: Props) {
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
-              <option value="defect">Defect / Rework</option>
+              <option value="flagged">Flagged (Defect / Rework)</option>
             </select>
           </div>
 

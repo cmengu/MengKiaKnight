@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Geist is loaded as a system stack now (no compile-time Google fetch).
+     Install the `geist` npm package and swap these for the real typeface. */
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-geist-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {
@@ -74,4 +78,12 @@ body {
     print-color-adjust: exact;
     background-color: white !important;
   }
+}
+
+/* Factory Floor — a calm, static concrete backdrop for the React Flow map.
+   (No moving decoration: the stations and flow arrows are the whole story.) */
+.factory-floor {
+  background:
+    radial-gradient(900px 360px at 50% -12%, rgb(16 185 129 / 0.05), transparent 70%),
+    linear-gradient(180deg, #191a1e 0%, #111214 55%, #0c0d0f 100%);
 }
