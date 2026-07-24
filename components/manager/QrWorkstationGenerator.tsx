@@ -21,9 +21,12 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
 
   // firstly load existing workstations once (client-side) oni, fetches the id and name and load intoa  list
   useEffect(() => {
-    supabase.from('workstations').select('id, name').then(({ data }) => {
-      if (data) setList(data)
-    })
+    supabase
+      .from('workstations')
+      .select('id, name')
+      .then(({ data }) => {
+        if (data) setList(data)
+      })
   }, [])
 
   const activeTarget = preSelectedItem || localTarget;
@@ -33,17 +36,20 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
     ? [{ id: activeTarget.id, name: activeTarget.name }]
     : list;
 
+
   return (
-    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl
-    print:bg-transparent print:border-none print:p-0 print:m-0 print:max-w-full print:w-full print:block">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl text-white font-bold print:hidden">
+    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl print:bg-transparent print:border-none print:p-0 print:m-0 print:max-w-full">
+      {/* 1. Added print overrides to break out of the max-width */}
+
+      {/* 2. Added print:hidden to completely remove the header */}
+      <div className="flex justify-between items-center mb-4 print:hidden">
+        <h2 className="text-xl text-white font-bold">
           {activeTarget ? 'Print Specific Workstation' : 'Workstations'}
         </h2>
 
         {/* The Emergency Exit Control */}
         {activeTarget && (
-          <div className="flex items-center gap-2 print:hidden">
+          <div className="flex items-center gap-2">
             <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
               Targeted Print Mode
             </span>
@@ -52,23 +58,25 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
                 onClearTarget();
                 setLocalTarget(null);
               }}
-              className="print:hidden px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
+
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
             >
-              Show All Stations ✕
+              Show All Workstation ✕
             </button>
           </div>
         )}
       </div>
 
-      {/* Hide the creation form if we are just here to print a specific label */}
-      {!activeTarget && (
-        <div className="print:hidden mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3">
+      {/* the form calls server action */}
+      {/* 3. Added print:hidden to completely remove the Create block */}
+      {!preSelectedItem && (
+        <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3 print:hidden">
           <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl mb-2">
             🛠️
           </div>
           <h3 className="text-white font-bold">Create Workstation</h3>
           <p className="text-sm text-slate-400 max-w-md">
-            New Workstations must be registered through the central Workstation Manager.
+            New Workstation must be registered through the central Workstation Manager.
           </p>
           <button
             onClick={onNavigateToWorkstationManager}
@@ -78,6 +86,12 @@ export function QrWorkstationGenerator({ preSelectedItem, onClearTarget, onNavig
           </button>
         </div>
       )}
+
+      <button onClick={() => window.print()}
+        className={`mb-4 px-4 py-2 rounded font-semibold text-white print:hidden transition-colors shadow-md
+            ${preSelectedItem ? 'bg-emerald-600 hover:bg-emerald-500 w-full' : 'bg-sky-600 hover:bg-sky-500'}`}>
+        {preSelectedItem ? `Print Label for ${preSelectedItem.name}` : 'Print all labels'}
+      </button>
 
       <div className="grid grid-cols-2 gap-4 mt-4 print:block print:w-full print:m-0">
         {displayList.map((w) => (
