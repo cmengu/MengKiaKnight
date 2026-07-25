@@ -12,6 +12,7 @@ export type ComponentItem = {
   id: string
   name: string
   current_status: string
+  current_workstation_id: string | null
   deadline: string | null
   last_updated_by: string | null
   workstations: { name: string } | null
@@ -37,12 +38,29 @@ export function ComponentManager({ onNavigateToQr }: Props) {
 
     const { data, error } = await supabase
       .from('components')
-      .select(`id, name, current_status, deadline, last_updated_by, workstations ( name )`)
+      .select(`
+        id, 
+        name, 
+        current_status, 
+        current_workstation_id,
+        deadline, 
+        last_updated_by, 
+        workstations (name)
+      `)
       .order('deadline', { ascending: true, nullsFirst: false })
 
     // we were throwing dis away — silent empty table with no clue why
     if (error) console.error('Error fetching components:', error)
-    if (data) setComponentsList(data as unknown as ComponentItem[])
+    if (data) {
+      // Sinking the 'completed' status to the bottom while keeping deadline sort
+      const sortedData = data.sort((a, b) => {
+        if (a.current_status === 'completed' && b.current_status !== 'completed') return 1;
+        if (a.current_status !== 'completed' && b.current_status === 'completed') return -1;
+        return 0; // If neither or both are completed, keep their original deadline order
+      });
+
+      setComponentsList(sortedData as unknown as ComponentItem[])
+    }
     setIsLoading(false)
   }
 

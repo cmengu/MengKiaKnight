@@ -75,7 +75,16 @@ export function DashboardOverview() {
         .select('*')
         .order('updated_at', { ascending: false })
 
-      if (data) setComponentsList(data)
+      if (data) if (data) {
+      // Sinking the 'completed' status to the bottom while keeping deadline sort
+      const sortedData = data.sort((a, b) => {
+        if (a.current_status === 'completed' && b.current_status !== 'completed') return 1;
+        if (a.current_status !== 'completed' && b.current_status === 'completed') return -1;
+        return 0; // If neither or both are completed, keep their original deadline order
+      });
+
+      setComponentsList(sortedData)
+    }
       setIsLoading(false)
     }
     fetchComponents()
