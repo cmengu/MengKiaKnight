@@ -32,7 +32,25 @@ import Anthropic from '@anthropic-ai/sdk'
    and finally -> completed. Only a workstation with is_final_station = true can mark
    something completed, so "completed" means it finished the WHOLE line, not one station.
  - flagged means a defect was found. It goes back to in_progress when reworked.
- - Join status_logs to workstations on status_logs.workstation_id = workstations.id.
+
+ Snapshot columns - READ THIS, it is the single biggest source of wrong answers:
+ - status_logs.workstation_name, status_logs.component_name and
+   components.current_workstation_name are DENORMALISED SNAPSHOTS. They record the
+   name as it was at scan time. They are stored for read speed, NOT for querying.
+ - NEVER GROUP BY, filter on, or return those snapshot columns. Always join to the
+   real table and use its name:
+     status_logs s JOIN workstations w ON w.id = s.workstation_id  -> use w.name
+     status_logs s JOIN components   c ON c.id = s.component_id    -> use c.name
+   Grouping by a snapshot name silently invents extra groups for stations and parts
+   that were renamed or deleted, which makes counts and superlatives wrong.
+ - Which side you start from depends on what is being grouped, and the two are NOT the same:
+     "per component" -> start from components and LEFT JOIN status_logs, so a part with
+       zero scans still appears with a count of 0.
+     "per workstation" -> start from status_logs and INNER JOIN workstations. Only
+       stations that actually recorded scans count. Never LEFT JOIN from workstations:
+       that invents zero rows for idle benches and wrecks "fewest / quietest" answers.
+ - A worker is identified by worker_name, not by the updated_by uuid. When counting
+   distinct workers, use COUNT(DISTINCT worker_name) and exclude NULL worker_name.
 
  Output rules (IMPORTANT - these decide whether your answer is judged correct):
  - Return ONLY the SQL. No prose, no markdown fences, no semicolon.

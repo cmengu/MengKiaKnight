@@ -123,7 +123,7 @@
     "expected_sql": "select avg(c) from (select component_id, count(*) c from status_logs group by component_id) t" },
   { "id": "longest-idle-gap", "question": "What is the longest time a component waited between two status changes?",
     "expected_sql": "select max(gap) from (select timestamp - lag(timestamp) over (partition by component_id order by timestamp) gap from status_logs) t" },
-  { "id": "avg-idle-per-station", "question": "What is the average time between consecutive status changes at each workstation?",
+  { "id": "avg-idle-per-station", "question": "At each workstation, what is the average time a component had been waiting since its own previous scan?",
     "expected_sql": "select w.name, avg(gap) from (select workstation_id, timestamp - lag(timestamp) over (partition by component_id order by timestamp) gap from status_logs) g join workstations w on w.id = g.workstation_id where gap is not null group by w.name" },
   { "id": "components-never-scanned", "question": "How many components have never been scanned?",
     "expected_sql": "select count(*) from components c where not exists (select 1 from status_logs s where s.component_id = c.id)" },
