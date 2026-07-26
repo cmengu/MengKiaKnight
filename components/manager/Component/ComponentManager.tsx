@@ -88,10 +88,10 @@ export function ComponentManager({ onNavigateToQr }: Props) {
       />
 
       {/* Search Header */}
-      <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm flex justify-between items-center">
+      <div className="bg-surface-raised p-6 rounded-xl border border-border-strong shadow-sm flex justify-between items-center">
         <div>
           <h3 className="text-xl text-white font-bold">Active Work Orders</h3>
-          <p className="text-sm text-slate-400 mt-1">Sorted by urgency</p>
+          <p className="text-sm text-fg mt-1">Sorted by urgency</p>
         </div>
 
         <div className="flex gap-4">
@@ -100,17 +100,17 @@ export function ComponentManager({ onNavigateToQr }: Props) {
             placeholder="Search ID or Name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg w-64 focus:outline-none focus:border-emerald-500"
+            className="bg-surface-raised border border-border-strong text-fg px-4 py-2 rounded-lg w-64 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </div>
 
       {/* Main Table */}
-      <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden">
+      <div className="bg-surface-raised rounded-xl border border-border-strong shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="bg-surface-raised/50 text-fg text-xs uppercase tracking-wider">
                 <th className="p-4 font-semibold">ID</th>
                 <th className="p-4 font-semibold">Name & Deadline</th>
                 <th className="p-4 font-semibold">Current Station</th>
@@ -118,19 +118,19 @@ export function ComponentManager({ onNavigateToQr }: Props) {
                 <th className="p-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700 border-t border-slate-700">
+            <tbody className="divide-y border-t border-border-strong">
               {isLoading ? (
-                <tr><td colSpan={5} className="p-8 text-center text-slate-500">Loading...</td></tr>
+                <tr><td colSpan={5} className="p-8 text-center text-fg">Loading...</td></tr>
               ) : filteredComponents.map((item) => (
                 <tr key={item.id} className={`transition-colors ${getUrgencyClasses(getUrgency(item.deadline, item.current_status))}`}>
-                  <td className="p-4 font-mono text-sm text-slate-300">{item.id.substring(0, 8)}...</td>
+                  <td className="p-4 font-mono text-sm text-fg">{item.id.substring(0, 8)}...</td>
                   <td className="p-4">
                     <div className="font-bold text-white">{item.name}</div>
-                    <div className="text-xs mt-1 text-slate-400">
+                    <div className="text-xs mt-1 text-fg">
                       {item.deadline ? new Date(item.deadline).toLocaleString() : 'No deadline'}
                     </div>
                   </td>
-                  <td className="p-4 text-slate-300">{item.workstations?.name || 'Unassigned'}</td>
+                  <td className="p-4 text-fg">{item.workstations?.name || 'Unassigned'}</td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
                       ${item.current_status === 'completed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
@@ -142,8 +142,8 @@ export function ComponentManager({ onNavigateToQr }: Props) {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => setHistoryItem(item)} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors" title="History">🕒</button>
-                      <button onClick={() => setEditingItem(item)} className="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-700 rounded-lg transition-colors" title="Edit">✏️</button>
+                      <button onClick={() => setHistoryItem(item)} className="p-2 text-fg hover:text-blue-400 hover:bg-surface-raised rounded-lg transition-colors" title="History">🕒</button>
+                      <button onClick={() => setEditingItem(item)} className="p-2 text-fg hover:text-amber-400 hover:bg-surface-raised rounded-lg transition-colors" title="Edit">✏️</button>
                       <button onClick={() => onNavigateToQr(item.id, item.name)} className="text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-500 transition-colors px-3 py-2 rounded-lg shadow-md active:scale-95">
                         Print Label
                       </button>
