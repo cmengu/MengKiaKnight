@@ -3,6 +3,41 @@ import { createClient } from '@supabase/supabase-js'
 import { generateSql, extractSql, validateSelect } from '../lib/ask'
 import { judge, type Verdict } from './compare'
 
+// Preflight. Without this the run dies inside the Supabase SDK with "supabaseUrl is
+// required" and a stack trace pointing at node_modules — which says nothing about WHICH
+// of the three required values is actually missing. Check all three up front and name them.
+const REQUIRED_ENV = [
+  'ANTHROPIC_API_KEY',
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+] as const
+
+const missing = REQUIRED_ENV.filter((k) => !process.env[k])
+if (missing.length > 0) {
+  const detail = `eval skipped — missing credentials: ${missing.join(', ')}`
+
+  // In CI the credentials legitimately may not exist: a fork PR cannot read repository
+  // secrets at all. Failing the whole pipeline for that would mean a contributor's PR
+  // goes red for a reason they cannot fix. So we SKIP loudly instead — ::notice:: puts
+  // the reason on the run summary, so a skipped eval can never be mistaken for a passed
+  // one. This is the same graceful-degradation stance the floor map takes when its
+  // optional migration is absent: degrade honestly and say so, never fail silently.
+  if (process.env.CI) {
+    console.log(`::notice title=Eval skipped::${detail}`)
+    console.log(`\n${detail}`)
+    console.log('The eval needs repository secrets. It runs on main and on manual dispatch.')
+    process.exit(0)
+  }
+
+  // Locally, missing env is always a mistake worth stopping for.
+  console.error(`\nCannot run the eval — missing env: ${missing.join(', ')}`)
+  console.error('Locally:  npx tsx --env-file=.env.local eval/run.ts')
+  console.error('In CI:    add these as *repository* secrets (Settings -> Secrets and')
+  console.error('          variables -> Actions -> Secrets tab). Note that Variables and')
+  console.error('          Environment secrets are NOT visible to a job as secrets.*\n')
+  process.exit(1)
+}
+
 // service-role client so the script can call the RPC w/o a logged-in cookie session
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
