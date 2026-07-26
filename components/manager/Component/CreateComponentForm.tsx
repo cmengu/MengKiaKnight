@@ -47,7 +47,7 @@ export function CreateComponentForm({ onSuccess }: Props) {
   }
 
   return (
-    <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm">
+    <div className="bg-surface-raised p-6 rounded-xl border border-border-strong shadow-sm">
       <h3 className="text-lg font-bold text-white mb-4">Create New Component</h3>
       
       <div className="flex flex-col md:flex-row gap-4 items-end">
@@ -59,7 +59,7 @@ export function CreateComponentForm({ onSuccess }: Props) {
             placeholder="e.g. Pins A"
             value={createForm.name}
             onChange={(e) => setCreateForm({...createForm, name: e.target.value})}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-surface-raised border border-border-strong rounded-lg px-4 py-2 text-white focus:outline-none focus:border-border-strong"
           />
         </div>
 
@@ -70,7 +70,7 @@ export function CreateComponentForm({ onSuccess }: Props) {
             type="date"
             value={createForm.date}
             onChange={(e) => setCreateForm({ ...createForm, date: e.target.value })}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-surface-raised border border-border-strong rounded-lg px-4 py-2 text-white focus:outline-none focus:border-border-strong"
           />
         </div>
 
@@ -81,7 +81,7 @@ export function CreateComponentForm({ onSuccess }: Props) {
             type="time"
             value={createForm.time}
             onChange={(e) => setCreateForm({ ...createForm, time: e.target.value })}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-surface-raised border border-border-strong rounded-lg px-4 py-2 text-white focus:outline-none focus:border-border-strong"
           />
         </div>
 

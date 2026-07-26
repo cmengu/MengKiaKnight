@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { QrLabel } from './QrLabel'
 
-
 // print-only now — creating components moved into ComponentManager. dis just lists
 // what exists and turns each row into a QR label.
 
@@ -14,7 +13,6 @@ interface QrComponentGeneratorProps {
   onClearTarget: () => void;
   onNavigateToComponentManager: () => void;
 }
-
 
 export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigateToComponentManager }: QrComponentGeneratorProps) {
   const [list, setList] = useState<FactoryComponent[]>([])
@@ -37,10 +35,8 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
     ? [{ id: activeTarget.id, name: activeTarget.name }]
     : list;
 
-
-
   return (
-    <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-2xl 
+    <div className="bg-surface-raised p-8 rounded-xl border border-border-subtle w-full max-w-2xl 
       print:absolute print:top-0 print:left-0 print:w-full print:bg-white print:text-black print:border-none print:m-0 print:p-0 print:z-[9999]">
 
       {/* THE ABSOLUTE PRINT BREAKOUT */}
@@ -96,13 +92,13 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
 
         {/* Header - Hidden in print */}
         <div className="flex justify-between items-center mb-4 print:hidden">
-          <h2 className="text-xl text-white font-bold">
+          <h2 className="text-xl text-fg font-bold">
             {activeTarget ? 'Print Specific Component' : 'Components'}
           </h2>
 
           {activeTarget && (
             <div className="flex items-center gap-2">
-              <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+              <span className="bg-surface-raised text-fg px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-border-subtle">
                 Targeted Print Mode
               </span>
               <button
@@ -110,8 +106,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
                   onClearTarget();
                   setLocalTarget(null);
                 }}
-
-                className="px-3 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 hover:text-white rounded-md text-xs font-semibold transition-colors active:scale-95"
+                className="px-3 py-1 bg-surface-raised hover:bg-surface-raised border border-border-subtle text-fg rounded-md text-xs font-semibold transition-colors active:scale-95"
               >
                 Show All Components ✕
               </button>
@@ -122,17 +117,17 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
         {/* the form calls server action */}
         {/* Added print:hidden to completely remove the Create block */}
         {!preSelectedItem && (
-          <div className="mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700 border-dashed text-center flex flex-col items-center justify-center space-y-3 print:hidden">
-            <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl mb-2">
+          <div className="mb-8 p-6 bg-surface-raised/50 rounded-xl border border-border-subtle border-dashed text-center flex flex-col items-center justify-center space-y-3 print:hidden">
+            <div className="w-12 h-12 bg-surface-raised rounded-full flex items-center justify-center text-xl mb-2">
               🛠️
             </div>
-            <h3 className="text-white font-bold">Create Component</h3>
-            <p className="text-sm text-slate-400 max-w-md">
+            <h3 className="text-fg font-bold">Create Component</h3>
+            <p className="text-sm text-fg-muted max-w-md">
               New components must be registered through the central Component Manager.
             </p>
             <button
               onClick={onNavigateToComponentManager}
-              className="mt-4 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors active:scale-95 shadow-md"
+              className="mt-4 px-6 py-2 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors active:scale-95 shadow-md"
             >
               Go to Component Manager →
             </button>
@@ -141,7 +136,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
 
         <button onClick={() => window.print()}
           className={`mb-4 px-4 py-2 rounded font-semibold text-white print:hidden transition-colors shadow-md
-            ${preSelectedItem ? 'bg-emerald-600 hover:bg-emerald-500 w-full' : 'bg-sky-600 hover:bg-sky-500'}`}>
+            ${preSelectedItem ? 'bg-brand hover:bg-brand-hover w-full' : 'bg-brand hover:bg-brand-hover'}`}>
           {preSelectedItem ? `Print Label for ${preSelectedItem.name}` : 'Print all labels'}
         </button>
 
@@ -149,7 +144,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
         <div className="grid grid-cols-2 gap-4 mt-4 print:block print:w-full print:m-0">
           {displayList.map((c) => (
             /* Wrap the label and button in a container */
-            <div key={c.id} className="flex flex-col items-center bg-slate-800 p-4 rounded-xl border border-slate-700 
+            <div key={c.id} className="flex flex-col items-center bg-surface-raised p-4 rounded-xl border border-border-subtle 
               print:p-0 print:border-none print:bg-transparent print:text-black qr-print-page">
 
               <QrLabel value={`${c.id}`} caption={c.name} />
@@ -161,7 +156,7 @@ export function QrComponentGenerator({ preSelectedItem, onClearTarget, onNavigat
                     setLocalTarget({ id: c.id, name: c.name });
                     setTimeout(() => window.print(), 100); // Wait 1 tick for state to update, then print!
                   }}
-                  className="mt-4 px-4 py-2 w-full max-w-[160px] bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors print:hidden shadow-sm"
+                  className="mt-4 px-4 py-2 w-full max-w-[160px] bg-surface-raised hover:bg-surface-raised border border-border-subtle text-fg rounded-lg text-sm font-semibold transition-colors print:hidden shadow-sm"
                 >
                   🖨️ Print QR
                 </button>
