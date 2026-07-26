@@ -1,0 +1,588 @@
+{
+  "generatedAt": "2026-07-26T13:41:33.046Z",
+  "total": 72,
+  "passed": 66,
+  "failed": 6,
+  "errored": 0,
+  "empty": 0,
+  "scorable": 72,
+  "accuracy": 91.7,
+  "results": [
+    {
+      "id": "total-components",
+      "question": "How many components are there in total?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "count-by-status",
+      "question": "How many components are in each status?",
+      "verdict": "PASS",
+      "generated": "SELECT current_status, COUNT(*) FROM components GROUP BY current_status",
+      "gotRowCount": 4,
+      "wantRowCount": 4
+    },
+    {
+      "id": "flagged-count",
+      "question": "How many components are currently flagged?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_status = 'flagged'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "completed-count",
+      "question": "How many components have been completed?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_status = 'completed'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "pending-count",
+      "question": "How many components are still pending?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_status = 'pending'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "in-progress-count",
+      "question": "How many components are being worked on right now?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_status = 'in_progress'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "station-count",
+      "question": "How many workstations are there?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "active-station-count",
+      "question": "How many workstations are active?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations WHERE is_active = true",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "in-progress-names",
+      "question": "Which components are currently in progress?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components WHERE current_status = 'in_progress' LIMIT 100",
+      "gotRowCount": 3,
+      "wantRowCount": 3
+    },
+    {
+      "id": "flagged-names",
+      "question": "List the names of the flagged components.",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components WHERE current_status = 'flagged' LIMIT 100",
+      "gotRowCount": 2,
+      "wantRowCount": 2
+    },
+    {
+      "id": "pending-names",
+      "question": "Which components are still pending?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components WHERE current_status = 'pending' LIMIT 100",
+      "gotRowCount": 3,
+      "wantRowCount": 3
+    },
+    {
+      "id": "completed-names",
+      "question": "List the names of the completed components.",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components WHERE current_status = 'completed' LIMIT 100",
+      "gotRowCount": 4,
+      "wantRowCount": 4
+    },
+    {
+      "id": "all-component-names",
+      "question": "List every component name.",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components LIMIT 100",
+      "gotRowCount": 12,
+      "wantRowCount": 12
+    },
+    {
+      "id": "overdue-count",
+      "question": "How many components are overdue?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE deadline < NOW() AND current_status <> 'completed'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "overdue-names",
+      "question": "Which components are overdue?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components WHERE deadline < NOW() AND current_status <> 'completed' LIMIT 100",
+      "gotRowCount": 6,
+      "wantRowCount": 6
+    },
+    {
+      "id": "no-deadline-count",
+      "question": "How many components have no deadline set?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE deadline IS NULL",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "earliest-deadline-component",
+      "question": "Which component has the earliest deadline?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components ORDER BY deadline ASC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "latest-deadline-component",
+      "question": "Which component has the latest deadline?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components ORDER BY deadline DESC NULLS LAST LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "due-next-24h-count",
+      "question": "How many components are due in the next 24 hours?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE deadline >= NOW() AND deadline <= NOW() + INTERVAL '24 hours'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "overdue-flagged-count",
+      "question": "How many overdue components are also flagged?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE deadline < NOW() AND current_status = 'flagged'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "components-with-deadline-count",
+      "question": "How many components have a deadline set?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE deadline IS NOT NULL",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "qa-station-names",
+      "question": "Which workstations are QA stations?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM workstations WHERE is_qa = true LIMIT 100",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "final-station-name",
+      "question": "Which workstation is the final station?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM workstations WHERE is_final_station = true LIMIT 100",
+      "gotRowCount": 2,
+      "wantRowCount": 2
+    },
+    {
+      "id": "qa-station-count",
+      "question": "How many QA stations are there?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations WHERE is_qa = true",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "inactive-station-count",
+      "question": "How many workstations have been deactivated?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations WHERE is_active = false",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "active-station-names",
+      "question": "List the names of all active workstations.",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM workstations WHERE is_active = true LIMIT 100",
+      "gotRowCount": 8,
+      "wantRowCount": 8
+    },
+    {
+      "id": "station-locations",
+      "question": "What is the location of each workstation?",
+      "verdict": "PASS",
+      "generated": "SELECT name, location FROM workstations LIMIT 100",
+      "gotRowCount": 8,
+      "wantRowCount": 8
+    },
+    {
+      "id": "stations-without-location-count",
+      "question": "How many workstations have no location recorded?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations WHERE location IS NULL OR location = ''",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "total-log-count",
+      "question": "How many status changes have been recorded in total?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "distinct-workers-count",
+      "question": "How many different workers have recorded a scan?",
+      "verdict": "FAIL",
+      "generated": "SELECT COUNT(DISTINCT updated_by) FROM status_logs",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "scans-per-worker",
+      "question": "How many scans has each worker recorded?",
+      "verdict": "PASS",
+      "generated": "SELECT worker_name, COUNT(*) FROM status_logs GROUP BY worker_name LIMIT 100",
+      "gotRowCount": 4,
+      "wantRowCount": 4
+    },
+    {
+      "id": "busiest-worker",
+      "question": "Which worker has recorded the most scans?",
+      "verdict": "PASS",
+      "generated": "SELECT worker_name FROM status_logs GROUP BY worker_name ORDER BY COUNT(*) DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "flag-events-count",
+      "question": "How many times has a component been flagged?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) AS count FROM status_logs WHERE to_status = 'flagged'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "rework-events-count",
+      "question": "How many times has a flagged component been sent back for rework?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) AS count FROM status_logs WHERE from_status = 'flagged' AND to_status = 'in_progress'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "completion-events-count",
+      "question": "How many components have ever been marked completed?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(DISTINCT component_id) FROM status_logs WHERE to_status = 'completed'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "last-updated-by-names",
+      "question": "Who last updated each component?",
+      "verdict": "PASS",
+      "generated": "SELECT name, last_updated_by FROM components LIMIT 100",
+      "gotRowCount": 12,
+      "wantRowCount": 12
+    },
+    {
+      "id": "changes-per-station",
+      "question": "How many status changes happened at each workstation?",
+      "verdict": "FAIL",
+      "generated": "SELECT workstation_name, COUNT(*) FROM status_logs GROUP BY workstation_name LIMIT 100",
+      "gotRowCount": 8,
+      "wantRowCount": 7
+    },
+    {
+      "id": "busiest-station",
+      "question": "Which workstation has the most status changes?",
+      "verdict": "PASS",
+      "generated": "SELECT workstation_name FROM status_logs GROUP BY workstation_name ORDER BY COUNT(*) DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "distinct-components-per-station",
+      "question": "How many distinct components has each workstation handled?",
+      "verdict": "FAIL",
+      "generated": "SELECT workstation_name, COUNT(DISTINCT component_id) FROM status_logs GROUP BY workstation_name LIMIT 100",
+      "gotRowCount": 8,
+      "wantRowCount": 7
+    },
+    {
+      "id": "most-handled-station",
+      "question": "Which workstation has handled the most distinct components?",
+      "verdict": "PASS",
+      "generated": "SELECT workstation_name FROM status_logs GROUP BY workstation_name ORDER BY COUNT(DISTINCT component_id) DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "components-per-current-station",
+      "question": "How many components are currently at each workstation?",
+      "verdict": "PASS",
+      "generated": "SELECT current_workstation_name, COUNT(*) FROM components GROUP BY current_workstation_name LIMIT 100",
+      "gotRowCount": 7,
+      "wantRowCount": 7
+    },
+    {
+      "id": "quietest-station",
+      "question": "Which workstation has the fewest status changes?",
+      "verdict": "FAIL",
+      "generated": "SELECT workstation_name FROM status_logs GROUP BY workstation_name ORDER BY COUNT(*) ASC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "changes-last-24h",
+      "question": "How many status changes happened in the last 24 hours?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE timestamp >= NOW() - INTERVAL '24 hours'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "completed-last-7d",
+      "question": "How many components were completed in the last 7 days?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE to_status = 'completed' AND timestamp >= NOW() - INTERVAL '7 days'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "changes-per-day",
+      "question": "How many status changes happened per day?",
+      "verdict": "PASS",
+      "generated": "SELECT DATE(timestamp) AS day, COUNT(*) AS count FROM status_logs GROUP BY DATE(timestamp) ORDER BY day LIMIT 100",
+      "gotRowCount": 4,
+      "wantRowCount": 4
+    },
+    {
+      "id": "changes-today-count",
+      "question": "How many status changes happened today?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE timestamp >= CURRENT_DATE",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "completed-today-count",
+      "question": "How many components were completed today?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE to_status = 'completed' AND timestamp >= CURRENT_DATE",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "flagged-today-count",
+      "question": "How many components were flagged today?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE to_status = 'flagged' AND timestamp >= CURRENT_DATE",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "changes-last-hour",
+      "question": "How many status changes happened in the last hour?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE timestamp >= NOW() - INTERVAL '1 hour'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "components-updated-today",
+      "question": "How many components were updated today?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE updated_at >= CURRENT_DATE",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "most-recently-updated-component",
+      "question": "Which component was updated most recently?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components ORDER BY updated_at DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "oldest-component",
+      "question": "Which component was created first?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components ORDER BY created_at ASC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "newest-component",
+      "question": "Which component was created most recently?",
+      "verdict": "PASS",
+      "generated": "SELECT name FROM components ORDER BY created_at DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "latest-scan-component",
+      "question": "Which component was scanned most recently?",
+      "verdict": "PASS",
+      "generated": "SELECT component_name FROM status_logs ORDER BY timestamp DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "most-scanned-component",
+      "question": "Which component has been scanned the most times?",
+      "verdict": "PASS",
+      "generated": "SELECT component_name FROM status_logs GROUP BY component_name ORDER BY COUNT(*) DESC LIMIT 1",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "top-3-scanned-components",
+      "question": "What are the top 3 most scanned components?",
+      "verdict": "PASS",
+      "generated": "SELECT component_name, COUNT(*) AS scan_count\nFROM status_logs\nGROUP BY component_name\nORDER BY scan_count DESC\nLIMIT 3",
+      "gotRowCount": 3,
+      "wantRowCount": 3
+    },
+    {
+      "id": "avg-changes-per-component",
+      "question": "What is the average number of status changes per component?",
+      "verdict": "PASS",
+      "generated": "SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM status_logs GROUP BY component_id) t",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "longest-idle-gap",
+      "question": "What is the longest time a component waited between two status changes?",
+      "verdict": "PASS",
+      "generated": "WITH ordered AS (\n  SELECT timestamp - LAG(timestamp) OVER (PARTITION BY component_id ORDER BY timestamp) AS gap\n  FROM status_logs\n)\nSELECT MAX(gap) AS longest_wait\nFROM ordered",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "avg-idle-per-station",
+      "question": "What is the average time between consecutive status changes at each workstation?",
+      "verdict": "FAIL",
+      "generated": "WITH ordered AS (\n  SELECT workstation_name, timestamp,\n         timestamp - LAG(timestamp) OVER (PARTITION BY workstation_id ORDER BY timestamp) AS gap\n  FROM status_logs\n)\nSELECT workstation_name, AVG(gap) AS avg_time\nFROM ordered\nWHERE gap IS NOT NULL\nGROUP BY workstation_name\nLIMIT 100",
+      "gotRowCount": 7,
+      "wantRowCount": 5
+    },
+    {
+      "id": "components-never-scanned",
+      "question": "How many components have never been scanned?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE id NOT IN (SELECT component_id FROM status_logs)",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "scans-per-component",
+      "question": "How many scans does each component have?",
+      "verdict": "FAIL",
+      "generated": "SELECT component_name, COUNT(*) FROM status_logs GROUP BY component_name LIMIT 100",
+      "gotRowCount": 13,
+      "wantRowCount": 12
+    },
+    {
+      "id": "components-at-final-station",
+      "question": "Which components are currently at the final station?",
+      "verdict": "PASS",
+      "generated": "SELECT c.name FROM components c JOIN workstations w ON c.current_workstation_id = w.id WHERE w.is_final_station = true LIMIT 100",
+      "gotRowCount": 3,
+      "wantRowCount": 3
+    },
+    {
+      "id": "components-at-qa-count",
+      "question": "How many components are currently at a QA station?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components c JOIN workstations w ON c.current_workstation_id = w.id WHERE w.is_qa = true",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "flagged-at-qa-count",
+      "question": "How many flagged components are sitting at a QA station?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components c JOIN workstations w ON c.current_workstation_id = w.id WHERE c.current_status = 'flagged' AND w.is_qa = true",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "scans-at-final-station",
+      "question": "How many scans happened at the final station?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs sl JOIN workstations w ON sl.workstation_id = w.id WHERE w.is_final_station = true",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "logs-missing-station-count",
+      "question": "How many status log entries have no workstation recorded?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM status_logs WHERE workstation_id IS NULL",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "components-without-station-count",
+      "question": "How many components are not assigned to any workstation?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_workstation_id IS NULL",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "nonexistent-status-count",
+      "question": "How many components have the status 'archived'?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM components WHERE current_status = 'archived'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "nonexistent-station-count",
+      "question": "How many workstations are called 'Warp Core'?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM workstations WHERE name = 'Warp Core'",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "duplicate-component-names",
+      "question": "How many component names are used more than once?",
+      "verdict": "PASS",
+      "generated": "SELECT COUNT(*) FROM (SELECT name FROM components GROUP BY name HAVING COUNT(*) > 1) t",
+      "gotRowCount": 1,
+      "wantRowCount": 1
+    },
+    {
+      "id": "status-values-in-use",
+      "question": "What distinct statuses are currently in use?",
+      "verdict": "PASS",
+      "generated": "SELECT DISTINCT current_status FROM components LIMIT 100",
+      "gotRowCount": 4,
+      "wantRowCount": 4
+    },
+    {
+      "id": "transitions-in-use",
+      "question": "What status transitions have actually been recorded?",
+      "verdict": "PASS",
+      "generated": "SELECT DISTINCT from_status, to_status FROM status_logs LIMIT 100",
+      "gotRowCount": 8,
+      "wantRowCount": 8
+    }
+  ]
+}

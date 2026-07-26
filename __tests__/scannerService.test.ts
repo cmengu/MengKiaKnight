@@ -38,8 +38,8 @@ jest.mock('@/lib/supabase', () => ({
 
 import { scannerService } from '@/lib/services/scannerService'
 
-const A_STATION = { id: 'ws-1', name: 'Assembly', isFinalStation: false }
-const FINAL_STATION = { id: 'ws-9', name: 'Final QA', isFinalStation: true }
+const A_STATION = { id: 'ws-1', name: 'Assembly', isFinalStation: false, isQa: false }
+const FINAL_STATION = { id: 'ws-9', name: 'Final QA', isFinalStation: true, isQa: false }
 const A_COMPONENT = { id: 'c-1', name: 'PCB-Board-001', currentStatus: 'in_progress' as const }
 
 beforeEach(() => {

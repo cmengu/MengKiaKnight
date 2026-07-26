@@ -207,9 +207,9 @@ export default function WorkerScanner() {
       setSuccessHint(`Sent back to ${reworkStationName} with defect note.`);
       setIsRerouting(false); // Close the red modal
 
-    } catch (error: any) {
-      console.error("Reroute failed:", error);
-      setErrorMessage(error.message || 'Failed to reroute component. Please try again.');
+    } catch (err: unknown) {
+      console.error("Reroute failed:", err);
+      setErrorMessage(errMessage(err, 'Failed to reroute component. Please try again.'));
     } finally {
       setIsUpdating(false);
     }
