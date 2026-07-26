@@ -41,7 +41,7 @@ export function EditComponentModal({ item, onClose, onSuccess }: Props) {
     // Fetch stations so God Mode has a destination list
     supabase
       .from('workstations')
-      .select('id, name, is_final_station')
+      .select('id, name, is_final_station, is_qa')
       .eq('is_active', true)
       .then(({ data }) => {
         if (data) {
@@ -50,6 +50,7 @@ export function EditComponentModal({ item, onClose, onSuccess }: Props) {
             id: station.id,
             name: station.name,
             isFinalStation: station.is_final_station,
+            isQa: station.is_qa
           }));
           setWorkstations(formattedStations);
         }
