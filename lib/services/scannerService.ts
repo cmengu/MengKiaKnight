@@ -10,6 +10,7 @@ export type VerifiedStation = {
     id: string;
     name: string;
     isFinalStation: boolean;
+    isQa: boolean;
 };
 
 /** A component the database has actually confirmed exists, with a status we recognise. */
@@ -24,6 +25,47 @@ export type PairingResult = {
     /** Set when the snapshot saved but the audit-trail row didn't. See processPairing. */
     logWarning?: string;
 };
+
+//QA reroute action
+export async function processQaReroute(
+  componentId: string,
+  componentName: string,
+  currentStatus: string,
+  reworkStationId: string,
+  reworkStationName: string,
+  defectNote: string,
+  workerName: string
+) {
+  // 1. Bounce the component backward
+  const { error: updateError } = await supabase
+    .from('components')
+    .update({
+      current_status: 'flagged',
+      current_workstation_id: reworkStationId,
+      current_workstation_name: reworkStationName,
+      updated_at: new Date().toISOString(),
+      last_updated_by: workerName
+    })
+    .eq('id', componentId);
+
+  if (updateError) throw updateError;
+
+  // 2. Audit Trail: We append the note to the worker's name so it shows up on the dashboard seamlessly
+  const { error: logError } = await supabase
+    .from('status_logs')
+    .insert({
+      component_id: componentId,
+      component_name: componentName,
+      from_status: currentStatus,
+      to_status: 'flagged',
+      workstation_id: reworkStationId,
+      workstation_name: reworkStationName,
+      worker_name: `${workerName} (Defect Note: ${defectNote})` 
+    });
+
+  if (logError) throw logError;
+  return true;
+}
 
 export const scannerService = {
 
@@ -61,7 +103,7 @@ export const scannerService = {
     async verifyWorkstation(id: string): Promise<VerifiedStation> {
         const { data, error } = await supabase
             .from('workstations')
-            .select('id, name, is_final_station, is_active')
+            .select('id, name, is_final_station, is_qa, is_active')
             .eq('id', id)
             .maybeSingle();
 
@@ -79,6 +121,7 @@ export const scannerService = {
             id: data.id,
             name: data.name,
             isFinalStation: data.is_final_station,
+            isQa: data.is_qa
         };
     },
 

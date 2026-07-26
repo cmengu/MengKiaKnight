@@ -75,6 +75,11 @@ export function DashboardOverview() {
         .select('*')
         .order('updated_at', { ascending: false })
 
+      if (error) {
+        console.error('Error fetching dashboard overview:', error)
+        return
+      }
+
       if (data) if (data) {
       // Sinking the 'completed' status to the bottom while keeping deadline sort
       const sortedData = data.sort((a, b) => {
