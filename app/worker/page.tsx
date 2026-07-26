@@ -21,7 +21,7 @@ import { useDeviceOS } from '@/hooks/useDeviceOS';
 import {
   scannerService,
   processQaReroute,
-  type VerifiedComponent, 
+  type VerifiedComponent,
   type VerifiedStation,
 } from '@/lib/services/scannerService';
 import {
@@ -376,9 +376,10 @@ export default function WorkerScanner() {
                 onChange={(e) => setSelectedStatus(e.target.value as ComponentStatus)}
                 className="w-full text-slate-900 font-bold text-xl p-4 rounded-xl mb-2"
               >
-                {moves.map((move) => (
-                  <option key={move.to} value={move.to}>{move.label}</option>
-                ))}
+                {moves.filter((move) => move.to !== 'flagged') /* THIS STRIPS OUT DEFECT OPTION */
+                  .map((move) => (
+                    <option key={move.to} value={move.to}>{move.label}</option>
+                  ))}
               </select>
 
               {/* plain-english explanation of what the pick actually does */}
