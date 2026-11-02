@@ -1,138 +1,37 @@
-# Mega Precision Tracking
-### QR-based production component tracking for manufacturing SMEs
+<h1 align="center">Mega Precision Tracking</h1>
 
-> NUS Orbital 2026 — Team MengKiaKNIGHT — Apollo 11
+<p align="center">Workers scan QR codes to move components through a factory line, and managers see where every part is.</p>
 
----
+<p align="center">
+  <a href="https://github.com/cmengu/MengKiaKnight/actions/workflows/ci.yml"><img src="https://github.com/cmengu/MengKiaKnight/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+</p>
 
-## Motivation
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/how-it-works-dark.svg">
+    <img src="docs/how-it-works-light.svg" alt="Status flow of a component: pending to in progress, then completed only at the final station or back to pending at any other station. A defect can be flagged from pending or in progress, and flagged goes back to in progress for rework." width="900">
+  </picture>
+</p>
 
-Manufacturing SMEs in Singapore — particularly in the semiconductor space — often lack systems for tracking component statuses across workstations. This causes delays, miscommunication, and production disruptions. TrackFlow gives workers a frictionless way to update component statuses on the floor, and gives managers a live, consolidated view of the entire production pipeline.
+<p align="center"><sub>The status rules enforced in <code>lib/services/statusTransitions.ts</code>. Drawn from the code, not a screenshot.</sub></p>
 
----
+## Why
 
-## Features
+Small manufacturers, such as semiconductor suppliers in Singapore, often have no shared record of which station a component is at. That causes delays and miscommunication. Here a worker scans a station QR and a component QR and picks the next legal status. A manager sees the factory floor map, the parts waiting at each station, and the full scan history.
 
-**Core**
-- **QR Code Generation & Scanning** — Unique QR tags per component batch; in-app camera scanner pulls up records instantly
-- **Real-Time Status Updates** — Workers tap to transition statuses (`Pending → In Progress → Completed → Flagged`) after scanning
-- **Manager Dashboard** — Live web view of all active components, current stations, and time elapsed per stage
+NUS Orbital 2026, team MengKiaKNIGHT (Apollo 11).
 
-**Extension**
-- **Bottleneck Analytics** — Average time per station surfaced automatically; weekly performance reports generated
-- **Idle Alerts** — Push notifications to managers when a component exceeds a configurable dwell threshold
-- **Data Export & Archiving** — One-click CSV export and Google Sheets sync for auditing and offline analysis
+## What is in the app
 
----
+- Worker page (`/worker`): scans a workstation QR and a component QR, then offers only the moves the rules allow. Each scan updates the component and appends a row to `status_logs`.
+- Manager page (`/manager`): overview tiles, component and workstation management, QR label generation, worker approvals, and a QA rerouting action that sends a defective part to a rework station.
+- Factory floor map: built with React Flow from the scan history. Arrows are the routes parts actually took, and the busiest station is shown as the bottleneck. It updates through Supabase realtime if realtime is enabled for `components` and `status_logs` (`supabase/floor_view.sql`).
+- Ask (`/manager/ask`): a manager types a question, Claude writes one read-only SQL SELECT, and it runs through the `run_readonly_query` RPC for signed-in users. `eval/` holds a 72-question golden set. The committed `eval/report.json` (generated 2026-07-26) records 72 of 72 passing.
+- Auth: Supabase Auth with worker and manager roles; new workers wait for manager approval.
 
-## Tech Stack
+## Run it
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js (App Router) + React |
-| PWA | `@ducanh2912/next-pwa` |
-| Database & Realtime | Supabase (Postgres + Realtime subscriptions) |
-| Auth | Supabase Auth |
-| QR Generation | `qrcode` |
-| QR Scanning | Browser MediaDevices API |
-| Data Export | Google Sheets API / CSV |
-| Hosting | Vercel |
-| Version Control | Git & GitHub |
-
-The app is a PWA — no installation required. Workers access the scan interface at `/scan` from any mobile browser; managers access the dashboard at `/dashboard` on desktop.
-
----
-
-## Architecture
-
-```mermaid
-flowchart TD
-    QR[QR Code - Unique per batch] -->|scanned| W_CAM
-
-    subgraph Core ["Core Features"]
-        subgraph Worker ["F1 - Worker Terminal - Mobile PWA"]
-            W_CAM[Camera Scanner]
-            W_TAP[Status Update]
-            W_CAM --> W_TAP
-        end
-        subgraph AdminPanel ["F3 - QR and Batch Management"]
-            M_ADMIN[Generate and Assign QR Batches]
-        end
-    end
-
-    subgraph Supabase ["Supabase Backend"]
-        SB_AUTH[Auth and RLS]
-        SB_DB[(Postgres DB)]
-        SB_RT[Realtime Subscriptions]
-        SB_AUTH -->|enforce| SB_DB
-        SB_DB --> SB_RT
-    end
-
-    subgraph Extensions ["Extension Features"]
-        subgraph StateMachine ["Ext F2 - QA and Rework State Machine"]
-            SM_FLAG[Defect Flagged]
-            SM_QA[QA Sub-Task]
-            SM_ROUTE[Rework Routing]
-            SM_TIME[Time Recalculated]
-            SM_FLAG --> SM_QA --> SM_ROUTE --> SM_TIME
-        end
-        subgraph Automation ["Ext F3 - Bottleneck Analytics and Idle Automation"]
-            A_CRON[Cron Job]
-            A_ALERT[Idle Alert Service]
-            A_CRON --> A_ALERT
-        end
-        subgraph Export ["QOL - Data Export"]
-            EX_CSV[CSV Export]
-            EX_GS[Google Sheets Sync]
-        end
-    end
-
-    subgraph Dashboard ["Core F2 - Live Manager Overview"]
-        M_DASH[Live Component Overview]
-        M_MAP[Factory Floor Map]
-        M_DASH --> M_MAP
-    end
-
-    W_CAM -->|fetch record| SB_DB
-    W_TAP -->|update status| SB_DB
-    M_ADMIN -->|insert batch| SB_DB
-    SB_DB -->|trigger defect flow| SM_FLAG
-    SB_DB -->|scheduled query| A_CRON
-    SB_DB --> EX_CSV
-    SB_DB --> EX_GS
-    SB_RT -->|realtime push| M_DASH
-    A_ALERT -->|notify| M_DASH
-
-    style Core fill:#0a1628,color:#fff,stroke:#4a9eff
-    style Extensions fill:#1a1208,color:#fff,stroke:#ffaa44
-    style Worker fill:#1e3a5f,color:#fff,stroke:#4a9eff
-    style AdminPanel fill:#1a3a2a,color:#fff,stroke:#4aff88
-    style Dashboard fill:#1a3a2a,color:#fff,stroke:#4aff88
-    style Supabase fill:#1a2a3a,color:#fff,stroke:#44aaff
-    style StateMachine fill:#3a2a1a,color:#fff,stroke:#ffaa44
-    style Automation fill:#2a1a3a,color:#fff,stroke:#cc88ff
-    style Export fill:#2a2a2a,color:#fff,stroke:#aaaaaa
-```
-
----
-
-## Milestones
-
-| Milestone | Date | Deliverable |
-|---|---|---|
-| 1 | 1 Jun | Proof of concept — scan a QR, fetch a dummy component, update status |
-| 2 | 29 Jun | Prototype — real-time DB integration, live manager dashboard |
-| 3 | 27 Jul | Extended system — analytics, idle alerts, Google Sheets export |
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- A Supabase project ([supabase.com](https://supabase.com))
-
-### Installation
+Needs Node.js 20 (as used in CI) and a Supabase project. Create the schema from `supabase/schema.sql`, then `supabase/floor_view.sql` for the floor map.
 
 ```bash
 git clone https://github.com/cmengu/MengKiaKnight
@@ -140,40 +39,31 @@ cd MengKiaKnight
 npm install
 ```
 
-### Environment Variables
-
-Create a `.env.local` file:
+Create `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
-
-### Development
 
 ```bash
-npm run dev
+npm run dev    # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Other scripts: `npm test` (unit tests), `npm run typecheck`, `npm run lint`, `npm run eval` (needs `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`), `npm run seed:factory`. `scripts/seed-demo.ts` creates demo manager and worker accounts.
 
----
+## Stack
 
-## Software Engineering Practices
+Next.js 16 (App Router) with React 19, Supabase (Postgres, Auth, Realtime), Tailwind CSS 4, `@yudiel/react-qr-scanner`, `qrcode.react`, `@xyflow/react`, `@tanstack/react-table`, and the Anthropic SDK for Ask. CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, build, integration tests and the eval.
 
-- **Agile sprints** aligned to Orbital milestones
-- **Feature branching** with pull requests and peer review before merging to `main`
-- **Component separation** — scan logic, status logic, and UI kept independently testable
-- **Automated testing** — unit tests for core status transition and QR processing logic
+## Milestones
 
----
+| Milestone | Date | Deliverable |
+|---|---|---|
+| 1 | 1 Jun | Proof of concept: scan a QR, fetch a dummy component, update status |
+| 2 | 29 Jun | Prototype: real-time DB integration, live manager dashboard |
+| 3 | 27 Jul | Extended system: analytics, idle alerts, Google Sheets export |
 
 ## Team
 
-| Name | Role |
-|---|---|
-| MengKiaKNIGHT | Full-stack |
-
----
-
-*NUS School of Computing — Orbital (CP2106) 2026*
+MengKiaKNIGHT, full-stack. NUS School of Computing, Orbital (CP2106) 2026.
