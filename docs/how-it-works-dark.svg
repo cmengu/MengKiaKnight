@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 270" width="900" height="270" role="img" aria-labelledby="t d">
+<title id="t">Component status flow</title>
+<desc id="d">A component moves from pending to in progress. At the final station it becomes completed and stops. At any other station it returns to pending for the next station. A defect can be flagged from pending or in progress, and a flagged component goes back to in progress for rework.</desc>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6e7681"/></marker>
+<marker id="b" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6ea0ff"/></marker>
+</defs>
+<g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" fill="#e6edf3" font-size="15">
+<path d="M120,110 H770" stroke="#6ea0ff" stroke-width="7" fill="none" marker-end="url(#b)" stroke-linecap="butt"/>
+<circle cx="120" cy="110" r="9" fill="#e6edf3"/><circle cx="400" cy="110" r="9" fill="#e6edf3"/><circle cx="800" cy="110" r="9" fill="#e6edf3"/>
+<text x="120" y="142" text-anchor="middle" font-weight="600">pending</text>
+<text x="400" y="142" text-anchor="middle" font-weight="600">in progress</text>
+<text x="800" y="142" text-anchor="middle" font-weight="600">completed</text>
+<text x="800" y="164" text-anchor="middle" fill="#9198a1" font-size="13">no moves out</text>
+<text x="585" y="96" text-anchor="middle" fill="#9198a1" font-size="13">final station only</text>
+<path d="M392,98 C360,30 160,30 128,98" stroke="#6e7681" stroke-width="1.5" fill="none" marker-end="url(#a)"/>
+<text x="260" y="40" text-anchor="middle" fill="#9198a1" font-size="13">any other station: Done Here, ready for the next</text>
+<path d="M122,152 L248,228" stroke="#6e7681" stroke-width="1.5" fill="none" marker-end="url(#a)"/>
+<path d="M396,154 L274,228" stroke="#6e7681" stroke-width="1.5" fill="none" marker-end="url(#a)"/>
+<path d="M276,242 C390,262 450,215 420,156" stroke="#6e7681" stroke-width="1.5" fill="none" marker-end="url(#a)"/>
+<circle cx="264" cy="236" r="6" fill="#e6edf3"/>
+<text x="250" y="256" text-anchor="end" font-weight="600">flagged</text>
+<text x="140" y="206" text-anchor="end" fill="#9198a1" font-size="13">Flag Defect</text>
+<text x="352" y="196" text-anchor="end" fill="#9198a1" font-size="13">Flag Defect</text>
+<text x="440" y="238" fill="#9198a1" font-size="13">Start Rework</text>
+</g></svg>
